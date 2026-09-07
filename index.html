@@ -399,7 +399,7 @@
   body.readonly .link-card button,
   body.readonly #doc-del, body.readonly #sh-del, body.readonly #ds-del,
   body.readonly #sh-addrow, body.readonly #sh-addcol,
-  body.readonly #reviewEmail,
+  body.readonly #reviewEmail, body.readonly #saveGithubBtn,
   body.readonly #nav button[data-view="focus"] { display: none !important; }
 </style>
 </head>
@@ -433,6 +433,7 @@
           <div class="bell-drop" id="bellDrop"></div>
         </div>
         <button class="bell" id="themeBtn" title="Toggle theme">🌙</button>
+        <button class="btn small" id="saveGithubBtn" title="Publish current workspace to GitHub Pages">💾 Save to GitHub</button>
         <div class="menu-wrap">
           <button class="bell" id="menuBtn">⚙️</button>
           <div class="menu-drop" id="menuDrop"></div>
@@ -1990,6 +1991,29 @@ function backupNow() {
     .then(r => r.json()).then(j => { if (j.ok) toast("Backed up locally + synced to Drive ✓"); })
     .catch(() => {});
 }
+async function saveToGitHub() {
+  if (READ_ONLY) { toast("Read-only view — nothing to save"); return; }
+  const btn = $("#saveGithubBtn");
+  const orig = btn ? btn.innerHTML : "";
+  if (btn) { btn.disabled = true; btn.innerHTML = "⏳ Saving…"; }
+  try {
+    const resp = await fetch("/api/github-save", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ state })
+    });
+    const j = await resp.json();
+    if (j.ok) {
+      toast(j.pushed ? "Saved to GitHub ✓ (" + (j.commit || "").slice(0, 7) + ")" : "No changes to save");
+    } else {
+      toast("Save failed: " + (j.error || "unknown"));
+    }
+  } catch (e) {
+    toast("Save failed — is the app running via bun server.js?");
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = orig; }
+  }
+}
 function restoreBackup() {
   const inp = document.createElement("input");
   inp.type = "file"; inp.accept = "application/json";
@@ -2099,6 +2123,7 @@ $("#globalSearch").addEventListener("input", e => globalSearch(e.target.value));
 $("#globalSearch").addEventListener("keydown", e => { if (e.key === "Enter") { const first = $("#searchResults .search-res"); if (first) first.click(); } if (e.key === "Escape") { $("#searchResults").classList.remove("show"); } });
 $("#bellBtn").onclick = () => $("#bellDrop").classList.toggle("show");
 $("#themeBtn").onclick = toggleTheme;
+if (!READ_ONLY) $("#saveGithubBtn").onclick = saveToGitHub;
 $("#menuBtn").onclick = () => { renderMenu(); $("#menuDrop").classList.toggle("show"); };
 document.addEventListener("click", e => {
   if (!e.target.closest(".search-wrap")) $("#searchResults").classList.remove("show");
