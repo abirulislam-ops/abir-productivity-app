@@ -22,6 +22,9 @@
       "priority": "high",
       "due": "2026-09-06",
       "project": "SPA Control Tower",
+      "sources": [
+        { "label": "ARL Daily SBU Sales Flash Report skill", "url": "https://drive.google.com/file/d/1b4IfPwwZU21cqPwnUZKYMkats4Ax-Jhf/view" }
+      ],
       "createdAt": "2026-09-06T08:00:00Z"
     },
     {
@@ -33,6 +36,9 @@
       "priority": "medium",
       "due": "2026-09-08",
       "project": "Strategic Planning",
+      "sources": [
+        { "label": "Strategic Planning skill (Sabbir Ahmed)", "url": "https://drive.google.com/file/d/1uefrtnJkmvRA00JfQKoXZpk6Otr6UGsO/view" }
+      ],
       "createdAt": "2026-09-05T16:00:00Z"
     },
     {
@@ -55,6 +61,10 @@
       "priority": "high",
       "due": null,
       "project": "Marketing",
+      "sources": [
+        { "label": "ROMI Analysis Aug 2026 (Corrected)", "url": "https://drive.google.com/file/d/1QBb7onuWB4RGjrZFIm3fDvB1Nvw0mTBF/view" },
+        { "label": "SBU Campaign Tracker skill", "url": "https://drive.google.com/file/d/1jsi7LBQVNXFNs-wk_CoZl2xX0SQ2Az5_/view" }
+      ],
       "createdAt": "2026-08-26T09:00:00Z"
     },
     {
@@ -67,6 +77,16 @@
       "due": null,
       "project": "Central Marketing & Business Development Policy",
       "tags": ["marketing", "business-development", "policy"],
+      "sources": [
+        { "label": "Central Marketing & BD Policy (draft)", "path": "Documents/SOD of all department/Central Marketing & Business Development Policy/AKIJ_Resource_Central_Marketing_BD_Policy.docx" },
+        { "label": "Alignment Gap Register", "path": "Documents/SOD of all department/Central Marketing & Business Development Policy/AKIJ_Resource_Alignment_Gap_Register.docx" },
+        { "label": "Marketing P&L Analyst skill (Ahnaf)", "url": "https://drive.google.com/file/d/1F69JOxvOVO3ezyz5pK5DEsHk3jayIzNL/view" },
+        { "label": "Marketing Campaign Dashboard skill", "url": "https://drive.google.com/file/d/1xJeCH3Odqx4qg2nERLvBZC4hU_0P-jGr/view" },
+        { "label": "Networking & BD skill", "url": "https://drive.google.com/file/d/1QDKpFX8U7MF-UNSKfp3QWo364KMzntKF/view" },
+        { "label": "SBU Campaign Tracker skill", "url": "https://drive.google.com/file/d/1jsi7LBQVNXFNs-wk_CoZl2xX0SQ2Az5_/view" },
+        { "label": "SBU Gap Analysis skill", "url": "https://drive.google.com/file/d/1uCDjF9I7u_GwwEB3U3C9-3Biva0960-h/view" },
+        { "label": "Workflow Automation Portal skill", "url": "https://drive.google.com/file/d/1_zVjkBCFL9VeaIpzHRzz4aYRGK9ro5hx/view" }
+      ],
       "createdAt": "2026-09-07T07:00:00Z"
     },
     {
@@ -79,6 +99,15 @@
       "due": "2026-09-08",
       "project": "Central Marketing & Business Development Policy",
       "tags": ["sod", "doa", "sop", "governance", "alignment"],
+      "sources": [
+        { "label": "Department-wise DoA & SoD", "path": "Documents/SOD of all department/Department wise DoA and SoD/" },
+        { "label": "Department-wise DoA (separated)", "path": "Documents/SOD of all department/Department wise Separated Files (DoA & SoD)/Department wise DoA/" },
+        { "label": "Department-wise SoD (separated)", "path": "Documents/SOD of all department/Department wise Separated Files (DoA & SoD)/Department wise SoD/" },
+        { "label": "SoP & SLA per SBU", "path": "Documents/SOD of all department/SoP and SLA/" },
+        { "label": "Company DoA & SoD", "path": "Documents/SOD of all department/DOA SOD Company Documents/" },
+        { "label": "Updated Company SoDs", "path": "Documents/SOD of all department/Updated Company SoDs/" },
+        { "label": "Strategic Planning & Analysis SOP", "url": "https://drive.google.com/file/d/1BbjZ03Rw2AtWwe4hfqJhdHC5Jnl-pjBV/view" }
+      ],
       "createdAt": "2026-09-07T07:00:00Z"
     }
   ],
