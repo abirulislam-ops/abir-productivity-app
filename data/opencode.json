@@ -1,0 +1,541 @@
+{
+  "version": 1,
+  "updatedAt": "2026-09-07T10:34:11.485Z",
+  "tasks": [
+    {
+      "id": "t1",
+      "title": "Build Abir's Productivity App",
+      "desc": "Dashboard analytics, task board, links and note workspace.",
+      "status": "progress",
+      "source": "opencode",
+      "priority": "high",
+      "due": "2026-09-07",
+      "project": "Productivity",
+      "createdAt": "2026-09-06T08:30:00Z"
+    },
+    {
+      "id": "t2",
+      "title": "Review SBU Sales Flash Report (T-1)",
+      "desc": "Verify DWH sync health and cross-check SBU revenue figures.",
+      "status": "open",
+      "source": "auto",
+      "priority": "high",
+      "due": "2026-09-06",
+      "project": "SPA Control Tower",
+      "sources": [
+        {
+          "label": "ARL Daily SBU Sales Flash Report skill",
+          "url": "https://drive.google.com/file/d/1b4IfPwwZU21cqPwnUZKYMkats4Ax-Jhf/view"
+        }
+      ],
+      "createdAt": "2026-09-06T08:00:00Z"
+    },
+    {
+      "id": "t3",
+      "title": "Prepare Strategic Planning weekly summary",
+      "desc": "Consolidate function performance and gap analysis.",
+      "status": "open",
+      "source": "opencode",
+      "priority": "medium",
+      "due": "2026-09-08",
+      "project": "Strategic Planning",
+      "sources": [
+        {
+          "label": "Strategic Planning skill (Sabbir Ahmed)",
+          "url": "https://drive.google.com/file/d/1uefrtnJkmvRA00JfQKoXZpk6Otr6UGsO/view"
+        }
+      ],
+      "createdAt": "2026-09-05T16:00:00Z"
+    },
+    {
+      "id": "t4",
+      "title": "Set up MCP servers (MSSQL, Playwright, Google)",
+      "desc": "Auto-logged from work sessions.",
+      "status": "done",
+      "source": "auto",
+      "priority": "medium",
+      "due": null,
+      "project": "Tooling",
+      "createdAt": "2026-08-18T08:00:00Z"
+    },
+    {
+      "id": "t5",
+      "title": "ARL ROMI Analysis Automation",
+      "desc": "Auto-logged from work sessions.",
+      "status": "done",
+      "source": "auto",
+      "priority": "high",
+      "due": null,
+      "project": "Marketing",
+      "sources": [
+        {
+          "label": "ROMI Analysis Aug 2026 (Corrected)",
+          "url": "https://drive.google.com/file/d/1QBb7onuWB4RGjrZFIm3fDvB1Nvw0mTBF/view"
+        },
+        {
+          "label": "SBU Campaign Tracker skill",
+          "url": "https://drive.google.com/file/d/1jsi7LBQVNXFNs-wk_CoZl2xX0SQ2Az5_/view"
+        }
+      ],
+      "createdAt": "2026-08-26T09:00:00Z"
+    },
+    {
+      "id": "t6",
+      "title": "Need to make a central Marketing & Business Development Policy.",
+      "desc": "I have:\n1. SoD, DoA, SLA, SoP of all AR Departments\n2. MCP, Skill File, Agent of All Functions of AR Marketing\n\n1. Align with SoP, DoA, SLA with SoD\n\nMain Objective: Need to distribute the working load among the departments and make CBDO sir aligned not responsible for all works.",
+      "status": "open",
+      "source": "opencode",
+      "priority": "high",
+      "due": null,
+      "project": "Central Marketing & Business Development Policy",
+      "tags": [
+        "marketing",
+        "business-development",
+        "policy"
+      ],
+      "sources": [
+        {
+          "label": "Central Marketing & BD Policy (draft)",
+          "path": "Documents/SOD of all department/Central Marketing & Business Development Policy/AKIJ_Resource_Central_Marketing_BD_Policy.docx"
+        },
+        {
+          "label": "Alignment Gap Register",
+          "path": "Documents/SOD of all department/Central Marketing & Business Development Policy/AKIJ_Resource_Alignment_Gap_Register.docx"
+        },
+        {
+          "label": "Marketing P&L Analyst skill (Ahnaf)",
+          "url": "https://drive.google.com/file/d/1F69JOxvOVO3ezyz5pK5DEsHk3jayIzNL/view"
+        },
+        {
+          "label": "Marketing Campaign Dashboard skill",
+          "url": "https://drive.google.com/file/d/1xJeCH3Odqx4qg2nERLvBZC4hU_0P-jGr/view"
+        },
+        {
+          "label": "Networking & BD skill",
+          "url": "https://drive.google.com/file/d/1QDKpFX8U7MF-UNSKfp3QWo364KMzntKF/view"
+        },
+        {
+          "label": "SBU Campaign Tracker skill",
+          "url": "https://drive.google.com/file/d/1jsi7LBQVNXFNs-wk_CoZl2xX0SQ2Az5_/view"
+        },
+        {
+          "label": "SBU Gap Analysis skill",
+          "url": "https://drive.google.com/file/d/1uCDjF9I7u_GwwEB3U3C9-3Biva0960-h/view"
+        },
+        {
+          "label": "Workflow Automation Portal skill",
+          "url": "https://drive.google.com/file/d/1_zVjkBCFL9VeaIpzHRzz4aYRGK9ro5hx/view"
+        }
+      ],
+      "createdAt": "2026-09-07T07:00:00Z"
+    },
+    {
+      "id": "t7",
+      "title": "Align SoP, DoA & SLA with SoD across AR departments",
+      "desc": "Next step of the Central Marketing & Business Development Policy: map each department's SoP, DoA and SLA against its SoD, then align them so workload is distributed across departments (CBDO not responsible for everything).",
+      "status": "open",
+      "source": "opencode",
+      "priority": "high",
+      "due": "2026-09-08",
+      "project": "Central Marketing & Business Development Policy",
+      "tags": [
+        "sod",
+        "doa",
+        "sop",
+        "governance",
+        "alignment"
+      ],
+      "sources": [
+        {
+          "label": "Department-wise DoA & SoD",
+          "path": "Documents/SOD of all department/Department wise DoA and SoD/"
+        },
+        {
+          "label": "Department-wise DoA (separated)",
+          "path": "Documents/SOD of all department/Department wise Separated Files (DoA & SoD)/Department wise DoA/"
+        },
+        {
+          "label": "Department-wise SoD (separated)",
+          "path": "Documents/SOD of all department/Department wise Separated Files (DoA & SoD)/Department wise SoD/"
+        },
+        {
+          "label": "SoP & SLA per SBU",
+          "path": "Documents/SOD of all department/SoP and SLA/"
+        },
+        {
+          "label": "Company DoA & SoD",
+          "path": "Documents/SOD of all department/DOA SOD Company Documents/"
+        },
+        {
+          "label": "Updated Company SoDs",
+          "path": "Documents/SOD of all department/Updated Company SoDs/"
+        },
+        {
+          "label": "Strategic Planning & Analysis SOP",
+          "url": "https://drive.google.com/file/d/1BbjZ03Rw2AtWwe4hfqJhdHC5Jnl-pjBV/view"
+        }
+      ],
+      "createdAt": "2026-09-07T07:00:00Z"
+    },
+    {
+      "id": "t8",
+      "title": "5-Year Strategic Analysis & gap workbook",
+      "desc": "DWH FY26-27 extraction (Jul+Aug actuals), consolidated Projected Income Statement (61 SBUs), 5-year strategy targets, SBU code mapping, and a 5-year gap-analysis workbook; reconciled consolidated vs DWH budget.",
+      "status": "done",
+      "source": "auto",
+      "priority": "high",
+      "due": null,
+      "project": "Corporate Strategy",
+      "tags": [
+        "strategy",
+        "gap-analysis",
+        "dwh",
+        "forecast"
+      ],
+      "sources": [
+        {
+          "label": "ARL 5-Year Strategy Master",
+          "url": "https://drive.google.com/file/d/1QK5_WPgODLlS_Qda-9x6rCfvfG2GI-cp/view"
+        },
+        {
+          "label": "Projected Income Statement",
+          "url": "https://drive.google.com/file/d/1fqRlz0dmw02_skUVVdMavCa4qeSS8Zyc/view"
+        },
+        {
+          "label": "SBU Strategic Gap Analysis",
+          "url": "https://drive.google.com/file/d/1ntusfMnLVPdUslokTk3ZDp5u9TKBTwmA/view"
+        }
+      ],
+      "createdAt": "2026-08-23T08:00:00Z"
+    },
+    {
+      "id": "t9",
+      "title": "Corporate Strategy Dashboard (HTML→Excel pivot)",
+      "desc": "Audited HTML tabs, broadened extraction to Segments/BCG/BusinessPlan/5-YearPlan/Agro, added multi-shape volume detection and derived rows (growth, GM/EBITDA/NP margins), rebuilt and verified the pivot.",
+      "status": "done",
+      "source": "auto",
+      "priority": "medium",
+      "due": null,
+      "project": "Corporate Strategy",
+      "tags": [
+        "dashboard",
+        "excel",
+        "pivot",
+        "html"
+      ],
+      "sources": [
+        {
+          "label": "ARL Corporate Strategy",
+          "url": "https://drive.google.com/file/d/19cztdRysBbGcEj3PsGiTsh5LEWT5aUCv/view"
+        },
+        {
+          "label": "Corporate Strategy FY 2026-27 → 2030-31",
+          "url": "https://drive.google.com/file/d/17ablV_BDSUigdCGxQ3Wb8-ZQjjbyNXjG/view"
+        }
+      ],
+      "createdAt": "2026-08-29T08:00:00Z"
+    },
+    {
+      "id": "t10",
+      "title": "Recovery Dashboard (+ DWH external/branch DB)",
+      "desc": "Built the Recovery Dashboard and set up the DWH external/branch database (Supabase mirror) with related tooling.",
+      "status": "done",
+      "source": "auto",
+      "priority": "medium",
+      "due": null,
+      "project": "Recovery Dashboard",
+      "tags": [
+        "dashboard",
+        "dwh",
+        "recovery"
+      ],
+      "sources": [
+        {
+          "label": "Recovery Dashboard",
+          "url": "https://drive.google.com/file/d/1ZnLht5l5bBfEq4iwcNZZFh4OVFnUXRId/view"
+        }
+      ],
+      "createdAt": "2026-08-18T08:00:00Z"
+    },
+    {
+      "id": "t11",
+      "title": "Google Drive two-way sync",
+      "desc": "Switched service account to OAuth user auth, built two-way local<->Drive sync script, fixed md5 hex/base64 bug + conflict logic, cleaned 168 junk conflict files, added scheduled task.",
+      "status": "done",
+      "source": "auto",
+      "priority": "medium",
+      "due": null,
+      "project": "Tooling",
+      "tags": [
+        "drive",
+        "sync",
+        "automation"
+      ],
+      "sources": [
+        {
+          "label": "Strategic Planning — Google Drive folder",
+          "url": "https://drive.google.com/drive/folders/1Lk6m6Jlr1Eg0kYbLhuY69sCX5ycbAQPn"
+        }
+      ],
+      "createdAt": "2026-08-24T08:00:00Z"
+    },
+    {
+      "id": "t12",
+      "title": "Agent for Abir + share-pack installer",
+      "desc": "Created the 'Agent for Abir' role profile and the ecosystem/share-pack installer (install.ps1, install.py, setup.bat), verified MCP merge, and re-zipped the share pack.",
+      "status": "done",
+      "source": "auto",
+      "priority": "medium",
+      "due": null,
+      "project": "Tooling",
+      "tags": [
+        "agent",
+        "installer",
+        "share-pack"
+      ],
+      "sources": [],
+      "createdAt": "2026-08-20T08:00:00Z"
+    },
+    {
+      "id": "t13",
+      "title": "SBU Campaign Success Tracker (MCP + SKILL)",
+      "desc": "campaigns.json SBU catalog, campaign_tracker MCP (FastMCP), refactored sync/build trackers to read config, sbu-campaign-tracker SKILL.md, MCP registration + routing.",
+      "status": "progress",
+      "source": "auto",
+      "priority": "high",
+      "due": null,
+      "project": "Marketing",
+      "tags": [
+        "campaign",
+        "mcp",
+        "skill",
+        "tracker"
+      ],
+      "sources": [
+        {
+          "label": "SBU Campaign Tracker skill",
+          "url": "https://drive.google.com/file/d/1jsi7LBQVNXFNs-wk_CoZl2xX0SQ2Az5_/view"
+        },
+        {
+          "label": "Cement (ACCL) Campaign Success Tracker",
+          "url": "https://drive.google.com/file/d/1HB6JnJQb6Ep-_jbiZam7Rv935XieJhJ8/view"
+        },
+        {
+          "label": "Ispat (AIL) Campaign Success Tracker",
+          "url": "https://drive.google.com/file/d/1b2fC_wlp3I4picCFnPt9kIaJ1-24Q4IQ/view"
+        },
+        {
+          "label": "ACCL Engineer Tour & Gift Program 2026-27",
+          "url": "https://drive.google.com/file/d/15mpA_0mDEsI7RRgeehiKyX6emBaRWCci/view"
+        }
+      ],
+      "createdAt": "2026-09-03T08:00:00Z"
+    },
+    {
+      "id": "t14",
+      "title": "SPA Dashboard — Analysis tab (React/TS)",
+      "desc": "analysis.ts (params, quadrant, health score, ranking), AnalysisTab/Controls/Leaderboard/QuadrantMatrix/HealthScore/SbuDrilldown components, tab navigation, CSS, unit tests, typecheck/test/build/deploy.",
+      "status": "progress",
+      "source": "auto",
+      "priority": "high",
+      "due": null,
+      "project": "Strategic Planning",
+      "tags": [
+        "dashboard",
+        "typescript",
+        "react",
+        "analysis"
+      ],
+      "sources": [
+        {
+          "label": "SBU Gap Analysis skill",
+          "url": "https://drive.google.com/file/d/1uCDjF9I7u_GwwEB3U3C9-3Biva0960-h/view"
+        }
+      ],
+      "createdAt": "2026-09-06T08:00:00Z"
+    }
+  ],
+  "workLog": [
+    {
+      "id": "w2",
+      "date": "2026-09-06",
+      "summary": "Building Abir's Productivity App — dashboard analytics from opencode.db, task board, links & note workspace.",
+      "hours": 6,
+      "project": "Productivity"
+    },
+    {
+      "id": "w1",
+      "date": "2026-09-05",
+      "summary": "Completed SBU Sales Flash Report development review; verified DWH sync health against fin.tblAccountingJournalArc.",
+      "hours": 4.5,
+      "project": "SPA Control Tower"
+    }
+  ],
+  "links": [
+    {
+      "id": "lk-sp-dash",
+      "name": "Strategic Planning Dashboard (Streamlit)",
+      "url": "http://localhost:8501",
+      "category": "dashboard"
+    },
+    {
+      "id": "lk-campaign-gh",
+      "name": "Campaign Success Tracker (GitHub)",
+      "url": "https://github.com/abirulislam-ops/engineering-program-campaign-tracker",
+      "category": "dashboard"
+    },
+    {
+      "id": "lk-drive-folder",
+      "name": "Strategic Planning — Google Drive folder",
+      "url": "https://drive.google.com/drive/folders/1Lk6m6Jlr1Eg0kYbLhuY69sCX5ycbAQPn",
+      "category": "other"
+    },
+    {
+      "id": "lk-sheet-sp-dash",
+      "name": "Akij Strategic Planning Dashboard",
+      "url": "https://docs.google.com/spreadsheets/d/1f0ZhlugQHX1IsN6H98GjnYG74C_VQb65DTCsWUvNp8g/edit",
+      "category": "sheet"
+    },
+    {
+      "id": "lk-sheet-sbus",
+      "name": "Running SBUs of ARL",
+      "url": "https://docs.google.com/spreadsheets/d/1dWIgQeiScAn6sircEwUe3EkFYoTDLhtG_LaGhSSoRWE/edit",
+      "category": "sheet"
+    },
+    {
+      "id": "lk-sheet-kpi-abir",
+      "name": "KPI Tracker — Abir (Aug 2026)",
+      "url": "https://docs.google.com/spreadsheets/d/1mHzAVLSm_M3maKQmZ25vAgY6GU18MQmwhnj93ujeN2I/edit",
+      "category": "sheet"
+    },
+    {
+      "id": "lk-sheet-kpi-auto",
+      "name": "KPI Tracker — Automation",
+      "url": "https://docs.google.com/spreadsheets/d/1-W46Cpdef5gI7sliOdLTg1a27mhUb964lVL1VG1ebeQ/edit",
+      "category": "sheet"
+    },
+    {
+      "id": "lk-sheet-kpi-mb-aug",
+      "name": "KPI Tracker — Marketing & BD (Aug 2026)",
+      "url": "https://docs.google.com/spreadsheets/d/1bPn-pr_t8BuJX7VINx06PkQzZDts2B4beG7BfMouQ5o/edit",
+      "category": "sheet"
+    },
+    {
+      "id": "lk-sheet-kpi-mb-jul",
+      "name": "KPI Tracker — Marketing & BD (Jul 2026)",
+      "url": "https://docs.google.com/spreadsheets/d/1tsP83qmzpb3sNeR3mDPblh0wb02FzdU4BRLsPcdpG5M/edit",
+      "category": "sheet"
+    },
+    {
+      "id": "lk-doc-abir",
+      "name": "Abir's Info",
+      "url": "https://docs.google.com/document/d/10rMs09N3uXq6IC66TZZBh8NI4D06oEUbptX6q5QF8C8/edit",
+      "category": "doc"
+    },
+    {
+      "id": "lk-doc-sql",
+      "name": "SQL Queries for DWH",
+      "url": "https://docs.google.com/document/d/1eF0IxtVRurZAUK4IIdgwn1obHpZdsvu4tlWsTDlpzko/edit",
+      "category": "doc"
+    },
+    {
+      "id": "lk-sheet-ar-corp",
+      "name": "ARL Corporate Strategy",
+      "url": "https://drive.google.com/file/d/19cztdRysBbGcEj3PsGiTsh5LEWT5aUCv/view",
+      "category": "sheet"
+    },
+    {
+      "id": "lk-sheet-ar-master",
+      "name": "ARL 5-Year Strategy Master",
+      "url": "https://drive.google.com/file/d/1QK5_WPgODLlS_Qda-9x6rCfvfG2GI-cp/view",
+      "category": "sheet"
+    },
+    {
+      "id": "lk-sheet-bva",
+      "name": "SBU Budget vs Actual Analysis",
+      "url": "https://drive.google.com/file/d/1XvjEyuKofZZwuLoFRt0gGrSPIGlpPnVB/view",
+      "category": "sheet"
+    },
+    {
+      "id": "lk-sheet-gap",
+      "name": "SBU Strategic Gap Analysis",
+      "url": "https://drive.google.com/file/d/1ntusfMnLVPdUslokTk3ZDp5u9TKBTwmA/view",
+      "category": "sheet"
+    },
+    {
+      "id": "lk-sheet-romi",
+      "name": "ROMI Analysis Aug 2026 (Corrected)",
+      "url": "https://drive.google.com/file/d/1QBb7onuWB4RGjrZFIm3fDvB1Nvw0mTBF/view",
+      "category": "sheet"
+    },
+    {
+      "id": "lk-sheet-cement",
+      "name": "Cement (ACCL) Campaign Success Tracker",
+      "url": "https://drive.google.com/file/d/1HB6JnJQb6Ep-_jbiZam7Rv935XieJhJ8/view",
+      "category": "sheet"
+    },
+    {
+      "id": "lk-sheet-ispat",
+      "name": "Ispat (AIL) Campaign Success Tracker",
+      "url": "https://drive.google.com/file/d/1b2fC_wlp3I4picCFnPt9kIaJ1-24Q4IQ/view",
+      "category": "sheet"
+    },
+    {
+      "id": "lk-sheet-tour",
+      "name": "ACCL Engineer Tour & Gift Program 2026-27",
+      "url": "https://drive.google.com/file/d/15mpA_0mDEsI7RRgeehiKyX6emBaRWCci/view",
+      "category": "sheet"
+    },
+    {
+      "id": "lk-sheet-recovery",
+      "name": "Recovery Dashboard",
+      "url": "https://drive.google.com/file/d/1ZnLht5l5bBfEq4iwcNZZFh4OVFnUXRId/view",
+      "category": "sheet"
+    },
+    {
+      "id": "lk-sheet-retail",
+      "name": "Retail Sales Dashboard",
+      "url": "https://drive.google.com/file/d/1xOP7_4BJLVoodHkFRdoLYD-saFAfS3Vn/view",
+      "category": "sheet"
+    },
+    {
+      "id": "lk-html-corp",
+      "name": "Corporate Strategy FY 2026-27 → 2030-31",
+      "url": "https://drive.google.com/file/d/17ablV_BDSUigdCGxQ3Wb8-ZQjjbyNXjG/view",
+      "category": "dashboard"
+    },
+    {
+      "id": "lk-html-profile",
+      "name": "AKIJ Resource Company Profile Dashboard",
+      "url": "https://drive.google.com/file/d/1wa_hMW_nubHG4lifN7hoI1h0Xgs1rAKx/view",
+      "category": "dashboard"
+    },
+    {
+      "id": "lk-pptx-360",
+      "name": "AKIJ 360 Market Intelligence Report",
+      "url": "https://drive.google.com/file/d/1StJyrbwUv5d4oQE03GH2deSerwcNzONp/view",
+      "category": "other"
+    },
+    {
+      "id": "lk-pptx-retail",
+      "name": "Retail Insights Presentation v2",
+      "url": "https://drive.google.com/file/d/1dYpPUR2cPCsWYbzsbVKeg0XCZt5ZIZTb/view",
+      "category": "other"
+    },
+    {
+      "id": "lk-pdf-pis",
+      "name": "Projected Income Statement",
+      "url": "https://drive.google.com/file/d/1fqRlz0dmw02_skUVVdMavCa4qeSS8Zyc/view",
+      "category": "doc"
+    },
+    {
+      "id": "lk-pdf-sop",
+      "name": "Strategic Planning & Analysis SOP",
+      "url": "https://drive.google.com/file/d/1BbjZ03Rw2AtWwe4hfqJhdHC5Jnl-pjBV/view",
+      "category": "doc"
+    }
+  ],
+  "notes": [],
+  "analytics": null,
+  "review": null
+}
