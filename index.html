@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#0b0f1a" />
 <title>Abir's Productivity App</title>
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="icon" href="icons/icon-192.png" type="image/png" />
+<link rel="apple-touch-icon" href="icons/icon-180.png" />
 <style>
   :root {
     --bg: #0b0f1a;
@@ -150,6 +154,11 @@
   .src-link { color: var(--accent); text-decoration: none; border: 1px solid var(--border); border-radius: 999px; padding: 2px 9px; background: var(--bg); }
   .src-link:hover { border-color: var(--accent); }
   .src-link.path { color: var(--muted); border-style: dashed; cursor: default; }
+  .src-wrap { display: inline-flex; align-items: center; gap: 3px; }
+  .src-del { border: none; background: transparent; color: var(--muted); cursor: pointer; font-size: 13px; line-height: 1; padding: 0 3px; border-radius: 50%; }
+  .src-del:hover { color: var(--red); background: rgba(248,113,113,.12); }
+  .src-add { color: var(--accent); background: transparent; border: 1px dashed var(--border2); border-radius: 999px; padding: 2px 9px; cursor: pointer; font-size: 12px; }
+  .src-add:hover { border-color: var(--accent); }
 
   .notice { border: 1px dashed var(--border2); background: rgba(91,140,255,.06); border-radius: 12px; padding: 14px 16px; font-size: 13px; color: var(--muted); margin-bottom: 16px; line-height: 1.55; }
   .notice b { color: var(--text); }
@@ -833,11 +842,16 @@ function renderTasks() {
     const srcBadge = t.source === "auto" ? `<span class="badge auto">⚡ auto-approved</span>` : `<span class="badge opencode">opencode</span>`;
     const priBadge = t.priority ? `<span class="badge ${t.priority}">${t.priority}</span>` : "";
     const tagBadges = (t.tags || []).map(g => `<span class="small muted">#${esc(g)}</span>`).join(" ");
-    const srcLinks = (t.sources || []).map(s => {
+    const srcLinks = (t.sources || []).map((s, i) => {
       const label = esc(s.label || s.url || s.path || "");
-      if (s.url) return `<a class="src-link" href="${esc(s.url)}" target="_blank" rel="noopener">${label} ↗</a>`;
-      return `<span class="src-link path" title="${esc(s.path || s.label || "")}">${label}</span>`;
+      const link = s.url
+        ? `<a class="src-link" href="${esc(s.url)}" target="_blank" rel="noopener">${label} ↗</a>`
+        : `<span class="src-link path" title="${esc(s.path || s.label || "")}">${label}</span>`;
+      const rm = READ_ONLY ? "" : `<button class="src-del" data-rem-src="${esc(t.id)}" data-src-i="${i}" title="Remove source">×</button>`;
+      return `<span class="src-wrap">${link}${rm}</span>`;
     }).join("");
+    const addBtn = READ_ONLY ? "" : `<button class="src-add" data-add-src="${esc(t.id)}" title="Add source">+ source</button>`;
+    const srcBlock = (srcLinks || addBtn) ? `<div class="task-sources">🔗 ${srcLinks}${addBtn}</div>` : "";
     return `
     <div class="task-item" data-id="${esc(t.id)}">
       <div class="task-check ${done?"done":""}" data-toggle="${esc(t.id)}">${done ? "✓" : ""}</div>
@@ -851,7 +865,7 @@ function renderTasks() {
           ${t.due ? `<span class="small muted">due ${esc(t.due)}</span>` : ""}
           ${tagBadges}
         </div>
-        ${srcLinks ? `<div class="task-sources">🔗 ${srcLinks}</div>` : ""}
+        ${srcBlock}
       </div>
       <div class="task-actions">
         <button class="btn ghost small" data-change="${esc(t.id)}">Request change</button>
@@ -876,6 +890,44 @@ function renderTasks() {
 
   $$("#taskList [data-toggle]").forEach(el => el.onclick = () => openRequest("change", el.dataset.toggle, "Request: mark as done"));
   $$("#taskList [data-change]").forEach(el => el.onclick = () => openRequest("change", el.dataset.change));
+  $$("#taskList [data-add-src]").forEach(el => el.onclick = () => openSourceForm(el.dataset.addSrc));
+  $$("#taskList [data-rem-src]").forEach(el => el.onclick = () => { removeSource(el.dataset.remSrc, +el.dataset.srcI); });
+}
+
+/* ---------- Task sources (add/remove, local) ---------- */
+function removeSource(taskId, i) {
+  const t = state.tasks.find(x => x.id === taskId);
+  if (!t) return;
+  t.sources = (t.sources || []).slice();
+  t.sources.splice(i, 1);
+  save(); renderTasks(); toast("Source removed");
+}
+function openSourceForm(taskId) {
+  const task = state.tasks.find(x => x.id === taskId);
+  if (!task) return;
+  $("#modal").innerHTML = `
+    <h3>Add source to task</h3>
+    <div class="notice" style="margin-bottom:12px">Task: <b>${esc(task.title)}</b></div>
+    <div class="field"><label>Label</label><input id="s-label" placeholder="e.g. Policy draft, SOP, skill file"></div>
+    <div class="field"><label>Link (URL) — optional</label><input id="s-url" placeholder="https://drive.google.com/... or file:///..."></div>
+    <div class="field"><label>Local path — optional (shown if no link)</label><input id="s-path" placeholder="Documents/SOD of all department/..."></div>
+    <div class="modal-actions">
+      <button class="btn ghost" id="s-cancel">Cancel</button>
+      <button class="btn" id="s-save">Save source</button>
+    </div>`;
+  openModal();
+  $("#s-cancel").onclick = closeModal;
+  $("#s-save").onclick = () => {
+    const label = $("#s-label").value.trim();
+    const url = $("#s-url").value.trim();
+    const path = $("#s-path").value.trim();
+    if (!label && !url && !path) { toast("Add a label or link"); return; }
+    const src = { label: label || (url || path) };
+    if (url) src.url = url;
+    if (path) src.path = path;
+    task.sources = (task.sources || []).concat([src]);
+    save(); closeModal(); renderTasks(); toast("Source added");
+  };
 }
 
 /* ---------- Requests ---------- */
@@ -1342,8 +1394,13 @@ function mergeOpencode(data) {
   if (data.tasks && Array.isArray(data.tasks)) {
     for (const t of data.tasks) {
       const ex = state.tasks.find(x => x.id === t.id);
-      if (ex) Object.assign(ex, t);
-      else state.tasks.push(t);
+      if (ex) {
+        const { sources, ...rest } = t;
+        Object.assign(ex, rest);
+        if (!ex.sources) ex.sources = sources || [];
+      } else {
+        state.tasks.push(t);
+      }
     }
   }
   if (data.workLog && Array.isArray(data.workLog)) {
@@ -1813,6 +1870,11 @@ window.createNote = createNote;
 applyReadOnly();
 renderAll();
 syncFromOpencode();
+
+/* Installable app (PWA) — register service worker when served over http(s) */
+if ("serviceWorker" in navigator && location.protocol !== "file:") {
+  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+}
 
 /* periodic deadline checks + notifications */
 renderAlerts();
