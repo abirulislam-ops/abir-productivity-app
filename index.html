@@ -3,51 +3,105 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="theme-color" content="#0b0f1a" />
+<meta name="theme-color" content="#0a0c12" />
 <title>Abir's Productivity App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="manifest" href="manifest.webmanifest" />
 <link rel="icon" href="icons/icon-192.png" type="image/png" />
 <link rel="apple-touch-icon" href="icons/icon-180.png" />
 <style>
   :root {
-    --bg: #0b0f1a;
-    --bg2: #0f1422;
-    --card: #141b2e;
-    --card2: #1a2338;
-    --border: #22304a;
-    --border2: #2d3c5c;
-    --text: #e6e9f2;
-    --muted: #8b93a7;
-    --accent: #5b8cff;
-    --accent2: #22d3ee;
-    --green: #34d399;
-    --amber: #fbbf24;
-    --red: #f87171;
-    --violet: #a78bfa;
-    --radius: 14px;
-    --shadow: 0 8px 30px rgba(0,0,0,.35);
+    --bg: #0a0c12;
+    --bg2: #0f1220;
+    --card: #141826;
+    --card2: #1a2033;
+    --border: #232a3e;
+    --border2: #313a54;
+    --text: #e8eaf2;
+    --muted: #98a0b5;
+    --accent: #7c9bff;
+    --accent2: #6fd3e0;
+    --green: #3ecf9e;
+    --amber: #e8b84b;
+    --red: #ef8b8b;
+    --violet: #9a86e8;
+    --accent-hover: #8faeff;
+    --on-accent: #0b1020;
+    --header-bg: rgba(10,12,18,.82);
+    --scroll: #2a3856;
+    --hover: #24314f;
+    --glow1: rgba(44,58,104,.55);
+    --glow2: rgba(34,46,82,.5);
+    --chart-label: #8b93a7;
+    --chart-grid: #22304a;
+    --chart-value: #e6e9f2;
+    --review-text: #d7cdf7;
+    --review-text-b: #e9e2fc;
+    --radius: 16px;
+    --shadow: 0 1px 2px rgba(8,10,18,.5), 0 10px 30px rgba(12,16,32,.45);
+    --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+    --font-body: "Figtree", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", monospace;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
   body {
-    font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
-    background: radial-gradient(1200px 600px at 15% -10%, #16203a 0%, transparent 55%),
-                radial-gradient(900px 500px at 100% 0%, #141b2e 0%, transparent 50%),
-                var(--bg);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    color-scheme: dark;
+    background:
+      radial-gradient(1100px 560px at 12% -8%, var(--glow1) 0%, transparent 55%),
+      radial-gradient(820px 480px at 100% 0%, var(--glow2) 0%, transparent 50%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E"),
+      var(--bg);
     color: var(--text);
     min-height: 100vh;
     overflow-x: hidden;
   }
   ::-webkit-scrollbar { width: 10px; height: 10px; }
-  ::-webkit-scrollbar-thumb { background: #2a3856; border-radius: 8px; }
+  ::-webkit-scrollbar-thumb { background: var(--scroll); border-radius: 8px; }
   ::-webkit-scrollbar-track { background: transparent; }
+
+  body.light {
+    color-scheme: light;
+    --bg: #f6f7fb;
+    --bg2: #eef0f6;
+    --card: #ffffff;
+    --card2: #f1f3f9;
+    --border: #e4e7ef;
+    --border2: #d3d8e6;
+    --text: #1a1c22;
+    --muted: #68707f;
+    --accent: #4a6cf0;
+    --accent2: #0e8fa8;
+    --green: #159a6d;
+    --amber: #b97e12;
+    --red: #d63f3f;
+    --violet: #6f57d6;
+    --accent-hover: #6b87f5;
+    --on-accent: #ffffff;
+    --header-bg: rgba(255,255,255,.85);
+    --scroll: #c6ccdc;
+    --hover: #e4e8f2;
+    --glow1: rgba(180,198,255,.6);
+    --glow2: rgba(205,220,255,.55);
+    --chart-label: #6b7280;
+    --chart-grid: #e2e6ee;
+    --chart-value: #23262e;
+    --review-text: #5b4a9e;
+    --review-text-b: #3f2f7d;
+    --shadow: 0 1px 2px rgba(16,20,40,.08), 0 10px 30px rgba(30,40,80,.10);
+  }
 
   .app { max-width: 1280px; margin: 0 auto; padding: 0 20px 60px; }
 
   /* Header */
   header {
     position: sticky; top: 0; z-index: 50;
-    background: rgba(11,15,26,.86); backdrop-filter: blur(12px);
+    background: var(--header-bg); backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
     padding: 14px 0;
   }
@@ -55,10 +109,11 @@
   .brand { display: flex; align-items: center; gap: 12px; }
   .brand .logo {
     width: 38px; height: 38px; border-radius: 11px;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    display: grid; place-items: center; font-weight: 800; font-size: 18px; color: #04122b;
+    background: var(--accent); color: var(--on-accent);
+    display: grid; place-items: center; font-weight: 800; font-size: 18px;
+    font-family: var(--font-display); box-shadow: 0 4px 14px rgba(124,155,255,.32);
   }
-  .brand h1 { font-size: 17px; font-weight: 700; letter-spacing: .2px; }
+  .brand h1 { font-family: var(--font-display); font-size: 17px; font-weight: 700; letter-spacing: -.2px; }
   .brand small { color: var(--muted); font-size: 11px; display: block; }
 
   nav { display: flex; gap: 6px; margin-left: auto; flex-wrap: wrap; }
@@ -68,7 +123,7 @@
     display: flex; align-items: center; gap: 7px; transition: .16s;
   }
   nav button:hover { color: var(--text); background: var(--card); }
-  nav button.active { color: #fff; background: linear-gradient(135deg, rgba(91,140,255,.18), rgba(34,211,238,.14)); border-color: var(--border2); }
+  nav button.active { color: var(--text); background: rgba(124,155,255,.14); border-color: rgba(124,155,255,.42); }
   nav button .dot { font-size: 15px; }
 
   .sync-status { font-size: 11.5px; color: var(--muted); display: flex; align-items: center; gap: 6px; white-space: nowrap; }
@@ -81,17 +136,19 @@
   @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 
   .page-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 26px 0 6px; flex-wrap: wrap; }
-  .page-title h2 { font-size: 22px; font-weight: 750; }
+  .page-title h2 { font-family: var(--font-display); font-size: 22px; font-weight: 700; letter-spacing: -.4px; }
   .page-title p { color: var(--muted); font-size: 13px; margin-top: 3px; }
 
   .btn {
-    background: linear-gradient(135deg, var(--accent), #3d6df0);
-    color: #fff; border: none; padding: 9px 15px; border-radius: 10px; cursor: pointer;
-    font-size: 13px; font-weight: 650; display: inline-flex; align-items: center; gap: 7px; transition: .15s;
+    background: var(--accent); color: var(--on-accent); border: none; padding: 9px 15px; border-radius: 10px; cursor: pointer;
+    font-size: 13px; font-weight: 650; display: inline-flex; align-items: center; gap: 7px;
+    transition: transform .15s, box-shadow .15s, background .15s;
+    box-shadow: 0 2px 10px rgba(124,155,255,.26);
   }
-  .btn:hover { filter: brightness(1.1); }
+  .btn:hover { background: var(--accent-hover); box-shadow: 0 4px 16px rgba(124,155,255,.36); }
+  .btn:active { transform: scale(.97); }
   .btn.ghost { background: var(--card2); border: 1px solid var(--border2); color: var(--text); }
-  .btn.ghost:hover { background: #202b45; }
+  .btn.ghost:hover { background: var(--hover); }
   .btn.small { padding: 6px 11px; font-size: 12px; border-radius: 8px; }
   .btn.danger { background: rgba(248,113,113,.14); color: var(--red); border: 1px solid rgba(248,113,113,.3); }
   .btn.danger:hover { background: rgba(248,113,113,.22); }
@@ -103,7 +160,7 @@
   .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-bottom: 20px; }
   .kpi { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; }
   .kpi .k-label { color: var(--muted); font-size: 12px; font-weight: 600; letter-spacing: .3px; text-transform: uppercase; }
-  .kpi .k-value { font-size: 26px; font-weight: 800; margin-top: 6px; }
+  .kpi .k-value { font-family: var(--font-display); font-size: 26px; font-weight: 700; margin-top: 6px; font-variant-numeric: tabular-nums; letter-spacing: -.3px; }
   .kpi .k-sub { color: var(--muted); font-size: 11.5px; margin-top: 4px; }
   .kpi.accent .k-value { color: var(--accent2); }
 
@@ -128,6 +185,7 @@
   .badge.done { background: rgba(52,211,153,.16); color: var(--green); }
   .badge.auto { background: rgba(34,211,238,.14); color: var(--accent2); }
   .badge.opencode { background: rgba(167,139,250,.16); color: var(--violet); }
+  .badge.manual { background: rgba(62,207,158,.14); color: var(--green); }
   .badge.pending { background: rgba(251,191,36,.16); color: var(--amber); }
   .badge.approved { background: rgba(52,211,153,.16); color: var(--green); }
   .badge.rejected { background: rgba(248,113,113,.16); color: var(--red); }
@@ -138,14 +196,14 @@
   /* Tasks */
   .task-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
   .chip { background: var(--card); border: 1px solid var(--border); color: var(--muted); padding: 6px 13px; border-radius: 20px; cursor: pointer; font-size: 12.5px; font-weight: 600; }
-  .chip.active { color: #fff; background: linear-gradient(135deg, rgba(91,140,255,.25), rgba(34,211,238,.18)); border-color: var(--border2); }
+  .chip.active { color: var(--text); background: rgba(124,155,255,.18); border-color: rgba(124,155,255,.42); }
 
   .task-item { display: flex; gap: 14px; align-items: flex-start; padding: 15px 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); margin-bottom: 10px; transition: .14s; }
   .task-item:hover { border-color: var(--border2); }
   .task-check { width: 20px; height: 20px; border-radius: 6px; border: 2px solid var(--border2); margin-top: 1px; cursor: pointer; display: grid; place-items: center; font-size: 12px; color: #04122b; flex-shrink: 0; }
   .task-check.done { background: var(--green); border-color: var(--green); }
   .task-body { flex: 1; }
-  .task-title { font-weight: 650; font-size: 14.5px; }
+  .task-title { font-weight: 600; font-size: 14.5px; letter-spacing: -.1px; }
   .task-title.done-t { text-decoration: line-through; color: var(--muted); }
   .task-desc { color: var(--muted); font-size: 12.5px; margin-top: 3px; }
   .task-meta { display: flex; gap: 8px; margin-top: 9px; flex-wrap: wrap; align-items: center; }
@@ -182,7 +240,7 @@
 
   .toolbar { display: flex; gap: 5px; flex-wrap: wrap; padding: 8px; border: 1px solid var(--border); border-radius: 10px 10px 0 0; background: var(--card2); }
   .toolbar button, .toolbar select, .toolbar input[type=color] { background: transparent; border: 1px solid var(--border2); color: var(--text); border-radius: 7px; padding: 5px 9px; cursor: pointer; font-size: 12.5px; min-width: 30px; }
-  .toolbar button:hover { background: #24314f; }
+  .toolbar button:hover { background: var(--hover); }
   .toolbar button.on { background: rgba(91,140,255,.22); border-color: var(--accent); }
 
   .editor { min-height: 420px; border: 1px solid var(--border); border-top: none; border-radius: 0 0 12px 12px; padding: 20px 24px; background: var(--bg2); outline: none; font-size: 14.5px; line-height: 1.7; }
@@ -201,7 +259,7 @@
   .sheet-wrap th { background: var(--card2); position: sticky; top: 0; z-index: 2; padding: 4px 6px; text-align: center; min-width: 84px; }
   .sheet-wrap th.rowh { position: sticky; left: 0; z-index: 1; background: var(--card2); min-width: 40px; }
   .sheet-wrap td input { width: 100%; background: transparent; border: 1px solid transparent; color: var(--text); padding: 6px 8px; font-size: 13px; outline: none; min-width: 84px; }
-  .sheet-wrap td input:focus { border-color: var(--accent); background: #10182a; }
+  .sheet-wrap td input:focus { border-color: var(--accent); background: var(--hover); }
   .sheet-wrap td.sel { background: rgba(91,140,255,.08); }
 
   /* Design canvas */
@@ -275,7 +333,7 @@
   .pomo { text-align: center; }
   .pomo .mode-tabs { display: flex; gap: 6px; justify-content: center; margin-bottom: 16px; }
   .pomo .ring { margin: 8px auto; width: 210px; height: 210px; border-radius: 50%; border: 8px solid var(--border2); display: grid; place-items: center; }
-  .pomo .timer { font-size: 56px; font-weight: 800; letter-spacing: 1px; font-variant-numeric: tabular-nums; }
+  .pomo .timer { font-family: var(--font-mono); font-size: 52px; font-weight: 600; letter-spacing: -1px; font-variant-numeric: tabular-nums; }
   .pomo .timer small { font-size: 14px; color: var(--muted); font-weight: 600; display: block; }
   .pomo .controls { display: flex; gap: 8px; justify-content: center; margin-top: 16px; }
   .pomo .focus-label { margin-top: 12px; }
@@ -314,6 +372,25 @@
     .print-area .ph { font-size: 20px; font-weight: 800; }
   }
 
+  /* --- Task updates & opencode advisory --- */
+  .task-updates { margin-top: 10px; border-left: 2px solid var(--border2); padding-left: 12px; display: flex; flex-direction: column; gap: 5px; }
+  .upd { font-size: 12px; color: var(--muted); line-height: 1.45; }
+  .upd .upd-at { display: inline-block; color: var(--accent2); font-family: var(--font-mono); font-size: 10.5px; margin-right: 7px; }
+  .task-review { margin-top: 10px; padding: 9px 12px; border-radius: 9px; background: rgba(154,134,232,.12); border: 1px solid rgba(154,134,232,.28); font-size: 12.5px; color: var(--review-text); line-height: 1.5; }
+  .task-review b { color: var(--review-text-b); }
+  .review-card { margin-top: 16px; padding: 14px 16px; border-radius: 12px; background: rgba(124,155,255,.08); border: 1px solid rgba(124,155,255,.3); }
+  .review-card .rc-head { font-family: var(--font-display); font-weight: 700; font-size: 13.5px; letter-spacing: -.1px; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+  .review-card .rc-body { font-size: 13px; color: var(--text); line-height: 1.55; white-space: pre-wrap; }
+  .review-card .rc-meta { font-family: var(--font-mono); font-size: 10.5px; color: var(--accent2); margin-top: 8px; }
+
+  .modal h3 { font-family: var(--font-display); letter-spacing: -.2px; }
+  .chart-card h3 { font-family: var(--font-display); }
+  .link-name { font-family: var(--font-display); }
+  .chip, .task-check, .habit-check, .src-add, .src-del { transition: transform .15s, background .15s, border-color .15s; }
+  .chip:active, .src-add:active { transform: scale(.95); }
+  .task-check:active, .habit-check:active { transform: scale(.88); }
+  .mini .mv { font-family: var(--font-display); font-variant-numeric: tabular-nums; }
+
   /* --- Read-only shared view --- */
   .ro-banner { display: flex; align-items: center; gap: 8px; background: linear-gradient(90deg, rgba(91,140,255,.16), rgba(167,139,250,.16)); border: 1px solid var(--border2); color: var(--text); padding: 11px 16px; border-radius: 12px; font-size: 13px; margin: 16px 0; }
   body.readonly #reqTaskBtn, body.readonly #reqListBtn,
@@ -335,7 +412,7 @@
         <div class="logo">A</div>
         <div>
           <h1>Abir's Productivity App</h1>
-          <small>Connected with opencode</small>
+          <small>You update · opencode reviews at day end</small>
         </div>
       </div>
       <nav id="nav">
@@ -355,6 +432,7 @@
           <button class="bell" id="bellBtn">🔔<span class="count" id="bellCount" style="display:none">0</span></button>
           <div class="bell-drop" id="bellDrop"></div>
         </div>
+        <button class="bell" id="themeBtn" title="Toggle theme">🌙</button>
         <div class="menu-wrap">
           <button class="bell" id="menuBtn">⚙️</button>
           <div class="menu-drop" id="menuDrop"></div>
@@ -395,19 +473,20 @@
     <div class="page-title">
       <div>
         <h2>Task List</h2>
-        <p>Tasks are created &amp; changed only by opencode. You can request additions or changes below.</p>
+        <p>Edit, update and re-open tasks yourself. opencode verifies or rewrites at day end and leaves its opinion.</p>
       </div>
       <div class="row">
         <button class="btn ghost" id="reqListBtn">🗂 Requests</button>
-        <button class="btn" id="reqTaskBtn">+ Request task</button>
+        <button class="btn" id="reqTaskBtn">+ New task</button>
       </div>
     </div>
     <div class="notice">
-      <b>How it works:</b> ✅ auto-approved tasks appear directly from opencode (from your actual work). To add or change a task,
-      submit a <b>request</b> — opencode reviews it. You cannot create, edit, or delete tasks directly.
-      Requests are exported to <b>opencode</b> and appear once approved.
+      <b>You're in control:</b> mark done, re-open, edit and add updates to any task instantly — no waiting.
+      Use <b>Ask opencode</b> on a task (or the <b>Requests</b> list) to have opencode verify/rewrite it and give its
+      best opinion at the end of the day.
     </div>
     <div class="task-filters" id="taskFilters"></div>
+    <div id="opencodeReview"></div>
     <div id="taskList"></div>
   </section>
 
@@ -602,7 +681,8 @@ function defaults() {
     mits: {},
     habits: [],
     meetings: [],
-    settings: { focusWork: 25, focusBreak: 5, notifyBrowser: true, backupAuto: true },
+    settings: { focusWork: 25, focusBreak: 5, notifyBrowser: true, backupAuto: true, theme: "dark" },
+    opencodeReview: null,
     seedIds: { tasks: SEED_TASKS.map(t => t.id), notes: SEED_NOTES.map(n => n.id), worklog: SEED_WORKLOG.map(w => w.id) }
   };
 }
@@ -617,6 +697,8 @@ function normalize(s) {
   if (!s.settings || typeof s.settings !== "object") s.settings = {};
   s.settings = Object.assign({}, d.settings, s.settings);
   if (!s.seedIds) s.seedIds = {};
+  if (!s.opencodeReview) s.opencodeReview = null;
+  (s.tasks || []).forEach(t => { if (!Array.isArray(t.updates)) t.updates = []; });
   return s;
 }
 function load() {
@@ -645,6 +727,7 @@ const fmtNum = n => {
 const fmtDate = ts => ts ? new Date(ts).toLocaleDateString(undefined, { month:"short", day:"numeric" }) : "—";
 const fmtDateTime = ts => ts ? new Date(ts).toLocaleString(undefined, { month:"short", day:"numeric", hour:"2-digit", minute:"2-digit" }) : "—";
 const daysBetween = (a, b) => Math.max(1, Math.ceil((b - a) / 86400000));
+const cssVar = n => getComputedStyle(document.body).getPropertyValue(n).trim();
 
 function toast(msg) {
   const t = $("#toast");
@@ -754,12 +837,12 @@ function drawBars(cv, values, labels, color) {
     ctx.fillStyle = color; ctx.globalAlpha = 0.92;
     ctx.beginPath(); ctx.roundRect(x, y, bw * 0.68, bh, 3); ctx.fill();
     ctx.globalAlpha = 1;
-    ctx.fillStyle = "#8b93a7"; ctx.textAlign = "center";
+    ctx.fillStyle = cssVar("--chart-label"); ctx.textAlign = "center";
     if (labels.length <= 30 || i % Math.ceil(labels.length/30) === 0) {
       ctx.fillText(String(labels[i]), padL + i * bw + bw/2, h - padB + 14);
     }
   }
-  ctx.strokeStyle = "#22304a"; ctx.beginPath(); ctx.moveTo(padL, h - padB); ctx.lineTo(w - padR, h - padB); ctx.stroke();
+  ctx.strokeStyle = cssVar("--chart-grid"); ctx.beginPath(); ctx.moveTo(padL, h - padB); ctx.lineTo(w - padR, h - padB); ctx.stroke();
 }
 function drawLine(cv, values, labels, color) {
   const { ctx, w, h } = setupCanvas(cv);
@@ -767,14 +850,14 @@ function drawLine(cv, values, labels, color) {
   const max = Math.max(1, ...values);
   const px = i => padL + (i * (w - padL - padR)) / Math.max(1, values.length - 1);
   const py = v => h - padB - ((h - padT - padB) * v) / max;
-  ctx.strokeStyle = "#22304a"; ctx.beginPath(); ctx.moveTo(padL, h - padB); ctx.lineTo(w - padR, h - padB); ctx.stroke();
+  ctx.strokeStyle = cssVar("--chart-grid"); ctx.beginPath(); ctx.moveTo(padL, h - padB); ctx.lineTo(w - padR, h - padB); ctx.stroke();
   ctx.strokeStyle = color; ctx.lineWidth = 2.2; ctx.lineJoin = "round";
   ctx.beginPath();
   values.forEach((v, i) => i ? ctx.lineTo(px(i), py(v)) : ctx.moveTo(px(i), py(v)));
   ctx.stroke();
   ctx.fillStyle = color;
   values.forEach((v, i) => { ctx.beginPath(); ctx.arc(px(i), py(v), 3.2, 0, 7); ctx.fill(); });
-  ctx.fillStyle = "#8b93a7"; ctx.font = "10px Segoe UI"; ctx.textAlign = "center";
+  ctx.fillStyle = cssVar("--chart-label"); ctx.font = "10px Segoe UI"; ctx.textAlign = "center";
   const step = Math.max(1, Math.ceil(labels.length / 8));
   labels.forEach((lb, i) => { if (i % step === 0) ctx.fillText(String(lb), px(i), h - padB + 14); });
 }
@@ -786,7 +869,7 @@ function drawHBar(cv, items, colors) {
   items.forEach((it, i) => {
     const y = i * rowH + rowH * 0.2;
     const barH = rowH * 0.6;
-    ctx.fillStyle = "#8b93a7"; ctx.font = "11px Segoe UI"; ctx.textAlign = "right";
+    ctx.fillStyle = cssVar("--chart-label"); ctx.font = "11px Segoe UI"; ctx.textAlign = "right";
     const label = it.label.length > 16 ? it.label.slice(0,16) + "…" : it.label;
     ctx.fillText(label, w - 8, y + barH * 0.75);
     ctx.fillStyle = colors[i % colors.length];
@@ -794,7 +877,7 @@ function drawHBar(cv, items, colors) {
     ctx.globalAlpha = 0.9;
     ctx.beginPath(); ctx.roundRect(10, y, bw, barH, 4); ctx.fill();
     ctx.globalAlpha = 1;
-    ctx.fillStyle = "#e6e9f2"; ctx.textAlign = "left"; ctx.font = "10.5px Segoe UI";
+    ctx.fillStyle = cssVar("--chart-value"); ctx.textAlign = "left"; ctx.font = "10.5px Segoe UI";
     ctx.fillText(String(it.value), 14 + bw, y + barH * 0.75);
   });
 }
@@ -839,7 +922,7 @@ function renderTasks() {
 
   const renderItem = t => {
     const done = t.status === "done";
-    const srcBadge = t.source === "auto" ? `<span class="badge auto">⚡ auto-approved</span>` : `<span class="badge opencode">opencode</span>`;
+    const srcBadge = t.source === "auto" ? `<span class="badge auto">⚡ auto-approved</span>` : t.source === "manual" ? `<span class="badge manual">✍️ you</span>` : `<span class="badge opencode">opencode</span>`;
     const priBadge = t.priority ? `<span class="badge ${t.priority}">${t.priority}</span>` : "";
     const tagBadges = (t.tags || []).map(g => `<span class="small muted">#${esc(g)}</span>`).join(" ");
     const srcLinks = (t.sources || []).map((s, i) => {
@@ -852,9 +935,16 @@ function renderTasks() {
     }).join("");
     const addBtn = READ_ONLY ? "" : `<button class="src-add" data-add-src="${esc(t.id)}" title="Add source">+ source</button>`;
     const srcBlock = (srcLinks || addBtn) ? `<div class="task-sources">🔗 ${srcLinks}${addBtn}</div>` : "";
+    const ups = (t.updates || []);
+    const upsBlock = ups.length ? `<div class="task-updates">${ups.slice().reverse().map(u => `<div class="upd"><span class="upd-at">${fmtDateTime(u.at)}</span>${esc(u.text)}</div>`).join("")}</div>` : "";
+    const reviewBlock = t.review ? `<div class="task-review"><b>opencode:</b> ${esc(t.review)}</div>` : "";
+    const actions = READ_ONLY ? "" : `
+      <button class="btn ghost small" data-edit="${esc(t.id)}">Edit</button>
+      <button class="btn ghost small" data-update="${esc(t.id)}">+ Update</button>
+      <button class="btn ghost small" data-ask="${esc(t.id)}">Ask opencode</button>`;
     return `
     <div class="task-item" data-id="${esc(t.id)}">
-      <div class="task-check ${done?"done":""}" data-toggle="${esc(t.id)}">${done ? "✓" : ""}</div>
+      <div class="task-check ${done?"done":""}" data-toggle="${esc(t.id)}" title="${done ? "Re-open task" : "Mark done"}">${done ? "↺" : ""}</div>
       <div class="task-body">
         <div class="task-title ${done?"done-t":""}">${esc(t.title)}</div>
         ${t.desc ? `<div class="task-desc">${esc(t.desc)}</div>` : ""}
@@ -864,12 +954,13 @@ function renderTasks() {
           ${t.project ? `<span class="small muted">${esc(t.project)}</span>` : ""}
           ${t.due ? `<span class="small muted">due ${esc(t.due)}</span>` : ""}
           ${tagBadges}
+          ${ups.length ? `<span class="small muted">· ${ups.length} update${ups.length>1?"s":""}</span>` : ""}
         </div>
+        ${reviewBlock}
+        ${upsBlock}
         ${srcBlock}
       </div>
-      <div class="task-actions">
-        <button class="btn ghost small" data-change="${esc(t.id)}">Request change</button>
-      </div>
+      <div class="task-actions">${actions}</div>
     </div>`;
   };
 
@@ -888,10 +979,26 @@ function renderTasks() {
     $("#taskList").innerHTML = list.map(renderItem).join("");
   }
 
-  $$("#taskList [data-toggle]").forEach(el => el.onclick = () => openRequest("change", el.dataset.toggle, "Request: mark as done"));
-  $$("#taskList [data-change]").forEach(el => el.onclick = () => openRequest("change", el.dataset.change));
+  $$("#taskList [data-toggle]").forEach(el => el.onclick = () => toggleTaskStatus(el.dataset.toggle));
+  $$("#taskList [data-edit]").forEach(el => el.onclick = () => openEditTask(el.dataset.edit));
+  $$("#taskList [data-update]").forEach(el => el.onclick = () => openAddUpdate(el.dataset.update));
+  $$("#taskList [data-ask]").forEach(el => el.onclick = () => openRequest("change", el.dataset.ask));
   $$("#taskList [data-add-src]").forEach(el => el.onclick = () => openSourceForm(el.dataset.addSrc));
   $$("#taskList [data-rem-src]").forEach(el => el.onclick = () => { removeSource(el.dataset.remSrc, +el.dataset.srcI); });
+  renderOpencodeReview();
+}
+
+function renderOpencodeReview() {
+  const el = $("#opencodeReview");
+  if (!el) return;
+  const r = state.opencodeReview;
+  if (!r) { el.innerHTML = ""; return; }
+  el.innerHTML = `
+    <div class="review-card">
+      <div class="rc-head"><span>💡</span> opencode's day-end review</div>
+      <div class="rc-body">${esc(r.note || (typeof r === "string" ? r : JSON.stringify(r)))}</div>
+      ${r.date ? `<div class="rc-meta">${esc(r.date)}</div>` : ""}
+    </div>`;
 }
 
 /* ---------- Task sources (add/remove, local) ---------- */
@@ -930,20 +1037,134 @@ function openSourceForm(taskId) {
   };
 }
 
+/* ---------- Task updates & local editing (direct control) ---------- */
+function addUpdate(taskId, text) {
+  const t = state.tasks.find(x => x.id === taskId);
+  if (!t) return;
+  t.updates = (t.updates || []).concat([{ id: uid(), text: text.trim(), at: new Date().toISOString() }]);
+}
+function toggleTaskStatus(taskId) {
+  const t = state.tasks.find(x => x.id === taskId);
+  if (!t) return;
+  if (t.status === "done") { t.status = "open"; addUpdate(taskId, "Re-opened (re-continued)"); }
+  else { t.status = "done"; addUpdate(taskId, "Marked done"); }
+  save(); renderTasks();
+  toast(t.status === "done" ? "Marked done ✓" : "Re-opened");
+}
+function openAddUpdate(taskId) {
+  const t = state.tasks.find(x => x.id === taskId);
+  if (!t) return;
+  $("#modal").innerHTML = `
+    <h3>Add update</h3>
+    <div class="notice" style="margin-bottom:12px">Task: <b>${esc(t.title)}</b></div>
+    <div class="field"><label>Progress note / update</label><textarea id="u-text" placeholder="What did you do? What's next?"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn ghost" id="u-cancel">Cancel</button>
+      <button class="btn" id="u-save">Save update</button>
+    </div>`;
+  openModal();
+  $("#u-cancel").onclick = closeModal;
+  $("#u-save").onclick = () => {
+    const text = $("#u-text").value.trim();
+    if (!text) { toast("Write something first"); return; }
+    addUpdate(taskId, text);
+    save(); closeModal(); renderTasks(); toast("Update added ✓");
+  };
+}
+function openEditTask(taskId) {
+  const t = state.tasks.find(x => x.id === taskId);
+  if (!t) return;
+  const statusOpts = Object.keys(STATUS).map(k => `<option value="${k}" ${t.status===k?"selected":""}>${STATUS[k]}</option>`).join("");
+  const prioOpts = ["low","medium","high"].map(p => `<option value="${p}" ${t.priority===p?"selected":""}>${p}</option>`).join("");
+  $("#modal").innerHTML = `
+    <h3>Edit task</h3>
+    <div class="field"><label>Title *</label><input id="e-title" value="${esc(t.title)}"></div>
+    <div class="field"><label>Description</label><textarea id="e-desc">${esc(t.desc || "")}</textarea></div>
+    <div class="row" style="gap:10px">
+      <div class="field" style="flex:1"><label>Status</label><select id="e-status">${statusOpts}</select></div>
+      <div class="field" style="flex:1"><label>Priority</label><select id="e-prio">${prioOpts}</select></div>
+    </div>
+    <div class="row" style="gap:10px">
+      <div class="field" style="flex:1"><label>Project</label><input id="e-project" value="${esc(t.project || "")}"></div>
+      <div class="field" style="flex:1"><label>Due date</label><input id="e-due" type="date" value="${esc(t.due || "")}"></div>
+    </div>
+    <div class="field"><label>Tags (comma-separated)</label><input id="e-tags" value="${esc((t.tags || []).join(", "))}"></div>
+    <div class="modal-actions">
+      <button class="btn ghost" id="e-cancel">Cancel</button>
+      <button class="btn" id="e-save">Save changes</button>
+    </div>`;
+  openModal();
+  $("#e-cancel").onclick = closeModal;
+  $("#e-save").onclick = () => {
+    const title = $("#e-title").value.trim();
+    if (!title) { toast("Title is required"); return; }
+    const newStatus = $("#e-status").value;
+    if (newStatus !== t.status) {
+      t.status = newStatus;
+      addUpdate(taskId, "Status → " + (STATUS[newStatus] || newStatus));
+    }
+    t.title = title;
+    t.desc = $("#e-desc").value.trim();
+    t.priority = $("#e-prio").value;
+    t.project = $("#e-project").value.trim();
+    t.due = $("#e-due").value || null;
+    t.tags = $("#e-tags").value.split(",").map(s => s.trim()).filter(Boolean);
+    save(); closeModal(); renderTasks(); toast("Task updated ✓");
+  };
+}
+function openAddTask(preTitle, preDesc) {
+  const prioOpts = ["low","medium","high"].map(p => `<option value="${p}" ${p==="medium"?"selected":""}>${p}</option>`).join("");
+  $("#modal").innerHTML = `
+    <h3>New task</h3>
+    <div class="notice" style="margin-bottom:12px">Adds instantly — you control it. opencode reviews at day end.</div>
+    <div class="field"><label>Title *</label><input id="a-title" value="${esc(preTitle || "")}" placeholder="Task title"></div>
+    <div class="field"><label>Description</label><textarea id="a-desc" placeholder="What needs to be done?">${esc(preDesc || "")}</textarea></div>
+    <div class="row" style="gap:10px">
+      <div class="field" style="flex:1"><label>Priority</label><select id="a-prio">${prioOpts}</select></div>
+      <div class="field" style="flex:1"><label>Due date</label><input id="a-due" type="date"></div>
+    </div>
+    <div class="field"><label>Project</label><input id="a-project" placeholder="e.g. Strategic Planning"></div>
+    <div class="field"><label>Tags (comma-separated)</label><input id="a-tags" placeholder="strategy, reporting"></div>
+    <div class="modal-actions">
+      <button class="btn ghost" id="a-cancel">Cancel</button>
+      <button class="btn" id="a-save">Add task</button>
+    </div>`;
+  openModal();
+  $("#a-cancel").onclick = closeModal;
+  $("#a-save").onclick = () => {
+    const title = $("#a-title").value.trim();
+    if (!title) { toast("Title is required"); return; }
+    const t = {
+      id: uid(), title,
+      desc: $("#a-desc").value.trim(),
+      status: "open", source: "manual",
+      priority: $("#a-prio").value,
+      due: $("#a-due").value || null,
+      project: $("#a-project").value.trim(),
+      tags: $("#a-tags").value.split(",").map(s => s.trim()).filter(Boolean),
+      createdAt: new Date().toISOString(),
+      updates: []
+    };
+    state.tasks.push(t);
+    addUpdate(t.id, "Created");
+    save(); closeModal(); renderTasks(); toast("Task added ✓");
+  };
+}
+
 /* ---------- Requests ---------- */
 function openRequest(type, taskId, presetNote) {
   const task = state.tasks.find(t => t.id === taskId);
   const isAdd = type === "add";
   $("#modal").innerHTML = `
-    <h3>${isAdd ? "Request to add a task" : "Request to change a task"}</h3>
+    <h3>${isAdd ? "Ask opencode to add a task" : "Ask opencode to review"}</h3>
     ${task ? `<div class="notice" style="margin-bottom:12px">Task: <b>${esc(task.title)}</b></div>` : ""}
     <div class="field"><label>Title *</label><input id="r-title" value="${esc(task ? task.title : "")}" placeholder="Task title"></div>
-    <div class="field"><label>Description / reason</label><textarea id="r-desc" placeholder="What should be added or changed, and why?">${presetNote ? "Please mark this task as done." : ""}</textarea></div>
+    <div class="field"><label>Description / what to review</label><textarea id="r-desc" placeholder="What should opencode verify or rewrite, and why?">${presetNote || ""}</textarea></div>
     <div class="field"><label>Priority</label><select id="r-prio"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option></select></div>
     ${task ? "" : `<div class="field"><label>Project</label><input id="r-project" placeholder="e.g. Strategic Planning"></div>`}
     <div class="modal-actions">
       <button class="btn ghost" id="r-cancel">Cancel</button>
-      <button class="btn" id="r-submit">Submit request → opencode</button>
+      <button class="btn" id="r-submit">Send to opencode</button>
     </div>`;
   openModal();
   $("#r-cancel").onclick = closeModal;
@@ -1395,14 +1616,20 @@ function mergeOpencode(data) {
     for (const t of data.tasks) {
       const ex = state.tasks.find(x => x.id === t.id);
       if (ex) {
-        const { sources, ...rest } = t;
+        const { sources, updates, review, ...rest } = t;
         Object.assign(ex, rest);
         if (!ex.sources) ex.sources = sources || [];
+        if (Array.isArray(updates)) {
+          ex.updates = ex.updates || [];
+          for (const u of updates) if (!ex.updates.some(x => x.id === u.id)) ex.updates.push(u);
+        }
+        if (typeof review !== "undefined") ex.review = review || null;
       } else {
         state.tasks.push(t);
       }
     }
   }
+  if (typeof data.review !== "undefined") state.opencodeReview = data.review || null;
   if (data.workLog && Array.isArray(data.workLog)) {
     for (const w of data.workLog) if (!state.workLog.find(x => x.id === w.id)) state.workLog.push(w);
     state.workLog.sort((a,b) => a.date.localeCompare(b.date));
@@ -1615,8 +1842,7 @@ function addToGoogleCalendar(m) {
   window.open(url, "_blank");
 }
 function requestTaskFromMeeting(m) {
-  openRequest("add");
-  if ($("#r-title")) { $("#r-title").value = m.title; $("#r-desc").value = "From meeting: " + m.title + " (" + m.date + (m.time ? " " + m.time : "") + ")"; }
+  openAddTask(m.title, "From meeting: " + m.title + " (" + m.date + (m.time ? " " + m.time : "") + ")");
 }
 
 /* ---------- Deadline alerts & notifications ---------- */
@@ -1828,9 +2054,27 @@ function applyReadOnly() {
   const req = $("#reqTaskBtn"); if (req) req.parentElement.style.justifyContent = "flex-end";
 }
 
+/* ---------- Theme (dark / light) ---------- */
+function currentTheme() { return state.settings.theme === "light" ? "light" : "dark"; }
+function applyTheme() {
+  const light = currentTheme() === "light";
+  document.body.classList.toggle("light", light);
+  document.body.classList.toggle("dark", !light);
+  const btn = $("#themeBtn");
+  if (btn) btn.textContent = light ? "☀️" : "🌙";
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute("content", light ? "#f6f7fb" : "#0a0c12");
+}
+function toggleTheme() {
+  state.settings.theme = currentTheme() === "light" ? "dark" : "light";
+  save();
+  applyTheme();
+  renderAll();
+}
+
 /* ---------- Bindings & init ---------- */
 $("#refreshBtn").onclick = syncFromOpencode;
-$("#reqTaskBtn").onclick = () => openRequest("add");
+$("#reqTaskBtn").onclick = () => openAddTask();
 $("#reqListBtn").onclick = renderRequests;
 $("#addLinkBtn").onclick = () => openLinkForm(null);
 $("#newNoteBtn").onclick = () => createNote(noteType);
@@ -1854,6 +2098,7 @@ $("#reviewEmail").onclick = reviewEmail;
 $("#globalSearch").addEventListener("input", e => globalSearch(e.target.value));
 $("#globalSearch").addEventListener("keydown", e => { if (e.key === "Enter") { const first = $("#searchResults .search-res"); if (first) first.click(); } if (e.key === "Escape") { $("#searchResults").classList.remove("show"); } });
 $("#bellBtn").onclick = () => $("#bellDrop").classList.toggle("show");
+$("#themeBtn").onclick = toggleTheme;
 $("#menuBtn").onclick = () => { renderMenu(); $("#menuDrop").classList.toggle("show"); };
 document.addEventListener("click", e => {
   if (!e.target.closest(".search-wrap")) $("#searchResults").classList.remove("show");
@@ -1867,6 +2112,7 @@ $("#modalBack").addEventListener("click", e => { if (e.target === $("#modalBack"
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
 window.createNote = createNote;
 
+applyTheme();
 applyReadOnly();
 renderAll();
 syncFromOpencode();
