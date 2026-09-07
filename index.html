@@ -682,7 +682,7 @@ function defaults() {
     mits: {},
     habits: [],
     meetings: [],
-    settings: { focusWork: 25, focusBreak: 5, notifyBrowser: true, backupAuto: true, theme: "dark" },
+    settings: { focusWork: 25, focusBreak: 5, notifyBrowser: true, backupAuto: true, autoPushGithub: true, theme: "dark" },
     opencodeReview: null,
     seedIds: { tasks: SEED_TASKS.map(t => t.id), notes: SEED_NOTES.map(n => n.id), worklog: SEED_WORKLOG.map(w => w.id) }
   };
@@ -711,6 +711,13 @@ function load() {
 }
 function save() {
   localStorage.setItem(LS_KEY, JSON.stringify(state));
+  scheduleAutoPush();
+}
+let autoPushTimer = null;
+function scheduleAutoPush() {
+  if (READ_ONLY || state.settings.autoPushGithub === false) return;
+  clearTimeout(autoPushTimer);
+  autoPushTimer = setTimeout(() => saveToGitHub(true), 5000);
 }
 
 /* ---------- Helpers ---------- */
@@ -1650,8 +1657,8 @@ function mergeOpencode(data) {
 function setSync(mode) {
   const el = $("#syncStatus");
   el.classList.remove("ok");
-  $("#syncText").textContent = mode === "ok" ? "opencode synced" : mode === "syncing" ? "syncing…" : "local";
-  if (mode === "ok") el.classList.add("ok");
+  $("#syncText").textContent = mode === "ok" ? "opencode synced" : mode === "github" ? "github synced" : mode === "syncing" ? "syncing…" : "local";
+  if (mode === "ok" || mode === "github") el.classList.add("ok");
 }
 
 function importOpencodeFile() {
@@ -1991,11 +1998,11 @@ function backupNow() {
     .then(r => r.json()).then(j => { if (j.ok) toast("Backed up locally + synced to Drive ✓"); })
     .catch(() => {});
 }
-async function saveToGitHub() {
-  if (READ_ONLY) { toast("Read-only view — nothing to save"); return; }
+async function saveToGitHub(silent) {
+  if (READ_ONLY) { if (!silent) toast("Read-only view — nothing to save"); return; }
   const btn = $("#saveGithubBtn");
   const orig = btn ? btn.innerHTML : "";
-  if (btn) { btn.disabled = true; btn.innerHTML = "⏳ Saving…"; }
+  if (btn && !silent) { btn.disabled = true; btn.innerHTML = "⏳ Saving…"; }
   try {
     const resp = await fetch("/api/github-save", {
       method: "POST",
@@ -2004,14 +2011,15 @@ async function saveToGitHub() {
     });
     const j = await resp.json();
     if (j.ok) {
-      toast(j.pushed ? "Saved to GitHub ✓ (" + (j.commit || "").slice(0, 7) + ")" : "No changes to save");
-    } else {
+      if (!silent) toast(j.pushed ? "Saved to GitHub ✓ (" + (j.commit || "").slice(0, 7) + ")" : "No changes to save");
+      else if (j.pushed) setSync("github");
+    } else if (!silent) {
       toast("Save failed: " + (j.error || "unknown"));
     }
   } catch (e) {
-    toast("Save failed — is the app running via bun server.js?");
+    if (!silent) toast("Save failed — is the app running via bun server.js?");
   } finally {
-    if (btn) { btn.disabled = false; btn.innerHTML = orig; }
+    if (btn && !silent) { btn.disabled = false; btn.innerHTML = orig; }
   }
 }
 function restoreBackup() {
@@ -2055,14 +2063,19 @@ function renderMenu() {
   const write = READ_ONLY ? "" : `
     <button id="expBackup">💾 Backup all data (JSON)</button>
     <button id="expRestore">📥 Restore from backup</button>`;
+  const autoOn = state.settings.autoPushGithub !== false;
   $("#menuDrop").innerHTML = `
     <button id="expTasks">📊 Export tasks (CSV)</button>
     ${write}
     <div class="sep"></div>
+    <button id="autoGh">🔄 Auto-sync to GitHub: ${autoOn ? "ON" : "OFF"}</button>
     <button id="expDash">🖨 Print dashboard / PDF</button>
     <button id="expReview">📄 Weekly review</button>`;
   $("#expTasks").onclick = exportTasksCSV;
-  if (!READ_ONLY) { $("#expBackup").onclick = backupNow; $("#expRestore").onclick = restoreBackup; }
+  if (!READ_ONLY) {
+    $("#expBackup").onclick = backupNow; $("#expRestore").onclick = restoreBackup;
+    $("#autoGh").onclick = () => { state.settings.autoPushGithub = !autoOn; save(); renderMenu(); toast(state.settings.autoPushGithub === false ? "Auto-sync to GitHub OFF" : "Auto-sync to GitHub ON"); };
+  }
   $("#expDash").onclick = () => printHTML("Dashboard", $("#view-dashboard").innerHTML);
   $("#expReview").onclick = renderWeeklyReview;
 }
