@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-08T04:00:49.055Z",
+  "updatedAt": "2026-09-08T04:44:51.043Z",
   "tasks": [
     {
       "id": "t1",
@@ -422,6 +422,29 @@
           "id": "idstwwb122mts406xm",
           "text": "Marked done",
           "at": "2026-09-08T03:27:58.234Z"
+        }
+      ]
+    },
+    {
+      "id": "idcwmetfl4mts6qyb2",
+      "title": "Team Productivity App",
+      "desc": "We need to create a productivity app for the Strategy Planning & Analysis team. In this app, supervisors can manage their own task as well as their team's given task. They can assign tasks to their teammate in the app or manually a teammate can tag them in any task, late they can approve or reject or edit those tasks created by teammates and tagged him.\n\nBasically this is a portal where team will manage or work. \nThis team has 4 members. 2 are managers and 2 are subordinates (Senior Officers).\n\nThis app will be impaired by Abir's productivity app.",
+      "status": "open",
+      "source": "manual",
+      "priority": "medium",
+      "due": "2026-09-09",
+      "project": "App Development",
+      "tags": [
+        "Team management",
+        "App",
+        "Productivity"
+      ],
+      "createdAt": "2026-09-08T04:44:45.998Z",
+      "updates": [
+        {
+          "id": "idm93sl2xfmts6qyb3",
+          "text": "Created",
+          "at": "2026-09-08T04:44:45.999Z"
         }
       ]
     }
