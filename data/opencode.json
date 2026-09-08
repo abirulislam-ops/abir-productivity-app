@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-08T03:28:04.503Z",
+  "updatedAt": "2026-09-08T03:28:13.394Z",
   "tasks": [
     {
       "id": "t1",
@@ -53,7 +53,7 @@
       "id": "t3",
       "title": "Prepare Strategic Planning weekly summary",
       "desc": "Consolidate function performance and gap analysis.",
-      "status": "open",
+      "status": "done",
       "source": "opencode",
       "priority": "medium",
       "due": "2026-09-08",
@@ -69,7 +69,13 @@
           "url": "https://drive.google.com/file/d/1uefrtnJkmvRA00JfQKoXZpk6Otr6UGsO/view"
         }
       ],
-      "updates": []
+      "updates": [
+        {
+          "id": "ideftu2jr4mts40dcr",
+          "text": "Marked done",
+          "at": "2026-09-08T03:28:06.555Z"
+        }
+      ]
     },
     {
       "id": "t4",
@@ -115,7 +121,7 @@
       "id": "t6",
       "title": "Need to make a central Marketing & Business Development Policy.",
       "desc": "I have:\n1. SoD, DoA, SLA, SoP of all AR Departments\n2. MCP, Skill File, Agent of All Functions of AR Marketing\n\n1. Align with SoP, DoA, SLA with SoD\n\nMain Objective: Need to distribute the working load among the departments and make CBDO sir aligned not responsible for all works.",
-      "status": "open",
+      "status": "done",
       "source": "opencode",
       "priority": "high",
       "due": null,
@@ -160,13 +166,19 @@
         }
       ],
       "createdAt": "2026-09-07T07:00:00Z",
-      "updates": []
+      "updates": [
+        {
+          "id": "idmix044ammts40fw7",
+          "text": "Marked done",
+          "at": "2026-09-08T03:28:09.847Z"
+        }
+      ]
     },
     {
       "id": "t7",
       "title": "Align SoP, DoA & SLA with SoD across AR departments",
       "desc": "Next step of the Central Marketing & Business Development Policy: map each department's SoP, DoA and SLA against its SoD, then align them so workload is distributed across departments (CBDO not responsible for everything).",
-      "status": "open",
+      "status": "done",
       "source": "opencode",
       "priority": "high",
       "due": "2026-09-08",
@@ -209,7 +221,13 @@
         }
       ],
       "createdAt": "2026-09-07T07:00:00Z",
-      "updates": []
+      "updates": [
+        {
+          "id": "idd2ckubnvmts40h6p",
+          "text": "Marked done",
+          "at": "2026-09-08T03:28:11.521Z"
+        }
+      ]
     },
     {
       "id": "t8",
