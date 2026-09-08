@@ -1,12 +1,12 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-08T03:27:41.651Z",
+  "updatedAt": "2026-09-08T03:27:52.544Z",
   "tasks": [
     {
       "id": "t1",
       "title": "Build Abir's Productivity App",
       "desc": "Dashboard analytics, task board, links and note workspace.",
-      "status": "progress",
+      "status": "done",
       "source": "opencode",
       "priority": "high",
       "due": "2026-09-07",
@@ -17,7 +17,13 @@
       ],
       "createdAt": "2026-09-06T08:30:00Z",
       "sources": [],
-      "updates": []
+      "updates": [
+        {
+          "id": "idwlzxms8xmts3zyoe",
+          "text": "Marked done",
+          "at": "2026-09-08T03:27:47.534Z"
+        }
+      ]
     },
     {
       "id": "t2",
