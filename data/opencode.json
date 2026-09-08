@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-08T04:50:06.118Z",
+  "updatedAt": "2026-09-08T04:50:54.535Z",
   "tasks": [
     {
       "id": "t1",
@@ -451,6 +451,10 @@
         {
           "label": "Abir's Team Productivity App",
           "path": "C:\\Abir\\Akij Resources\\Strategic planning Department\\Abir's Productivity App"
+        },
+        {
+          "label": "Productivity App Builder",
+          "path": "C:\\Users\\ADMiN\\.config\\opencode\\skills\\productivity-app-builder"
         }
       ]
     },
