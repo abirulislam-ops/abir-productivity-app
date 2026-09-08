@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-08T03:27:52.544Z",
+  "updatedAt": "2026-09-08T03:28:04.503Z",
   "tasks": [
     {
       "id": "t1",
@@ -29,7 +29,7 @@
       "id": "t2",
       "title": "Review SBU Sales Flash Report (T-1)",
       "desc": "Verify DWH sync health and cross-check SBU revenue figures.",
-      "status": "open",
+      "status": "done",
       "source": "auto",
       "priority": "high",
       "due": "2026-09-06",
@@ -41,7 +41,13 @@
           "url": "https://drive.google.com/file/d/1b4IfPwwZU21cqPwnUZKYMkats4Ax-Jhf/view"
         }
       ],
-      "updates": []
+      "updates": [
+        {
+          "id": "id0ankrnk4mts407wa",
+          "text": "Marked done",
+          "at": "2026-09-08T03:27:59.482Z"
+        }
+      ]
     },
     {
       "id": "t3",
@@ -333,7 +339,7 @@
       "id": "t13",
       "title": "SBU Campaign Success Tracker (MCP + SKILL)",
       "desc": "campaigns.json SBU catalog, campaign_tracker MCP (FastMCP), refactored sync/build trackers to read config, sbu-campaign-tracker SKILL.md, MCP registration + routing.",
-      "status": "progress",
+      "status": "done",
       "source": "auto",
       "priority": "high",
       "due": null,
@@ -363,13 +369,19 @@
         }
       ],
       "createdAt": "2026-09-03T08:00:00Z",
-      "updates": []
+      "updates": [
+        {
+          "id": "idwbo3co83mts405n2",
+          "text": "Marked done",
+          "at": "2026-09-08T03:27:56.558Z"
+        }
+      ]
     },
     {
       "id": "t14",
       "title": "SPA Dashboard — Analysis tab (React/TS)",
       "desc": "analysis.ts (params, quadrant, health score, ranking), AnalysisTab/Controls/Leaderboard/QuadrantMatrix/HealthScore/SbuDrilldown components, tab navigation, CSS, unit tests, typecheck/test/build/deploy.",
-      "status": "progress",
+      "status": "done",
       "source": "auto",
       "priority": "high",
       "due": null,
@@ -387,7 +399,13 @@
         }
       ],
       "createdAt": "2026-09-06T08:00:00Z",
-      "updates": []
+      "updates": [
+        {
+          "id": "idstwwb122mts406xm",
+          "text": "Marked done",
+          "at": "2026-09-08T03:27:58.234Z"
+        }
+      ]
     }
   ],
   "workLog": [
