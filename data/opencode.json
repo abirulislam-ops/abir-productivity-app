@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-08T04:44:51.043Z",
+  "updatedAt": "2026-09-08T04:49:09.412Z",
   "tasks": [
     {
       "id": "t1",
@@ -445,6 +445,29 @@
           "id": "idm93sl2xfmts6qyb3",
           "text": "Created",
           "at": "2026-09-08T04:44:45.999Z"
+        }
+      ]
+    },
+    {
+      "id": "id35pfjgsomts6who0",
+      "title": "AEL Business Analysis",
+      "desc": "Step 01: I have to collect the data from iBOSE ERP and do a homework. After Understanding the business, \n\nStep 02: I need to consultant with Emtiaze vai (AEL's Rice's Brand Custodian).\n\nStep 03: Finally I need to make a Business analysis of AEL.",
+      "status": "open",
+      "source": "manual",
+      "priority": "high",
+      "due": "2026-09-08",
+      "project": "Strategic Planning",
+      "tags": [
+        "Strategy",
+        "Analysis",
+        "Forecasting"
+      ],
+      "createdAt": "2026-09-08T04:49:04.368Z",
+      "updates": [
+        {
+          "id": "idpkce3x04mts6who0",
+          "text": "Created",
+          "at": "2026-09-08T04:49:04.368Z"
         }
       ]
     }
