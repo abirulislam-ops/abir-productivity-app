@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-08T04:51:00.586Z",
+  "updatedAt": "2026-09-13T09:03:05.734Z",
   "tasks": [
     {
       "id": "t1",
@@ -39,6 +39,10 @@
         {
           "label": "ARL Daily SBU Sales Flash Report skill",
           "url": "https://drive.google.com/file/d/1b4IfPwwZU21cqPwnUZKYMkats4Ax-Jhf/view"
+        },
+        {
+          "label": "Previous Flash Report",
+          "url": "https://ahmedahnaf-arl.github.io/arl-flash-report-live/"
         }
       ],
       "updates": [
@@ -113,9 +117,24 @@
         {
           "label": "SBU Campaign Tracker skill",
           "url": "https://drive.google.com/file/d/1jsi7LBQVNXFNs-wk_CoZl2xX0SQ2Az5_/view"
+        },
+        {
+          "label": "ROMI tamplate and formula",
+          "url": "https://docs.google.com/spreadsheets/d/1clwbHNY7wuihMLaEJwXxGkbNP8Sr6_Vs/edit?gid=1727150774#gid=1727150774"
         }
       ],
-      "updates": []
+      "updates": [
+        {
+          "id": "idup4tv8ecmttsarml",
+          "text": "1. Incremental revenue to Marketing-Led Revenue\n2. Incremental Profit to Marketing-Led Profit\n3. All BranchMaek need to add for all SBU\n4. Marketing led Target  vs Achievement for all SBU for FY 26-27",
+          "at": "2026-09-09T07:35:48.573Z"
+        },
+        {
+          "id": "idrcwep2g1mttsauo6",
+          "text": "Re-opened (re-continued)",
+          "at": "2026-09-09T07:35:52.518Z"
+        }
+      ]
     },
     {
       "id": "t6",
@@ -445,6 +464,11 @@
           "id": "idm93sl2xfmts6qyb3",
           "text": "Created",
           "at": "2026-09-08T04:44:45.999Z"
+        },
+        {
+          "id": "idqolyzy90mttsil00",
+          "text": "Individual KPI & Team KPI",
+          "at": "2026-09-09T07:41:53.232Z"
         }
       ],
       "sources": [
@@ -478,6 +502,155 @@
           "id": "idpkce3x04mts6who0",
           "text": "Created",
           "at": "2026-09-08T04:49:04.368Z"
+        },
+        {
+          "id": "idb16pkqq2mttv31ad",
+          "text": "Marked done",
+          "at": "2026-09-09T08:53:46.693Z"
+        }
+      ],
+      "sources": [
+        {
+          "label": "iBOSE ERP Web link",
+          "url": "https://erp.peopledesk.io/self-service/self-dashboard"
+        },
+        {
+          "label": "AEL Sales Dashboard (Looker)",
+          "url": "https://datastudio.google.com/reporting/2ad73084-97d5-4012-9cb3-e53aa9c06e85/page/i2GpF"
+        },
+        {
+          "label": "AEL Sales Report_March 2026",
+          "url": "https://datastudio.google.com/reporting/fff58b19-bc9e-4290-ad55-82223d1fc024/page/g5mtF"
+        },
+        {
+          "label": "AEL Sales Report for March 2026 (Looker) 2",
+          "url": "https://datastudio.google.com/reporting/9701c8a0-16d9-46fd-aa48-62ffc37f17bf/page/g5mtF"
+        },
+        {
+          "label": "Local File path",
+          "path": "C:\\Abir\\Akij Resources\\Strategic planning Department\\Documents\\Business Analysis\\AEl Analysis\\September Analysis"
+        }
+      ]
+    },
+    {
+      "id": "idi21tz543mttk8cog",
+      "title": "All SBU Business Analysis and Survey Plan",
+      "desc": "For SBU's Business Analysis Survey (Brand Health, Market share)\n1. Questions\n2. Survey area\n3. Stockholder analysis for survey\n4. Complete frame work\n5. Survey\n6. Report\n7. After that we will automated the whole thing",
+      "status": "open",
+      "source": "manual",
+      "priority": "high",
+      "due": "2026-09-10",
+      "project": "Strategic Survey",
+      "tags": [
+        "Survey",
+        "Analysis"
+      ],
+      "createdAt": "2026-09-09T03:49:58.960Z",
+      "updates": [
+        {
+          "id": "id8sast7kfmttk8coh",
+          "text": "Created",
+          "at": "2026-09-09T03:49:58.961Z"
+        }
+      ],
+      "sources": [
+        {
+          "label": "Data Source",
+          "url": "https://erp.peopledesk.io"
+        },
+        {
+          "label": "Local Path",
+          "path": "C:\\Abir\\Akij Resources\\Strategic planning Department\\Documents\\Business Analysis"
+        },
+        {
+          "label": "Result",
+          "url": "https://abirulislam-ops.github.io/akij-customer-understanding/"
+        }
+      ]
+    },
+    {
+      "id": "id1tgj0nsrmttv1z51",
+      "title": "AKIJ Resource Revenue Assurance Plan",
+      "desc": "There is a Presentation. From this presentation, I need to make a dashboard. In this dashboard, we need all SBU's marketing led target vs revenue and the forecasting of this FY 2026.\n\nInstructions:\n1. YTD Target vs Achievement\n2. Marketing led revenue's Forecasting for October 2026 to June 2027. \n3. What are the gaps of marketing led revenue and target of the forecasting.\n4. First make a EXCEL dashboard. Then we will make a HTML dashboard or integrate with our Steamlit dashboard.\n[In ROMI, I will get Marketing led revenue(Incremental Revenue).]",
+      "status": "done",
+      "source": "manual",
+      "priority": "high",
+      "due": "2026-09-09",
+      "project": "Strategic Planning",
+      "tags": [
+        "Dashboard",
+        "Plan",
+        "Revenue"
+      ],
+      "createdAt": "2026-09-09T08:52:57.253Z",
+      "updates": [
+        {
+          "id": "idyz3ulqd4mttv1z51",
+          "text": "Created",
+          "at": "2026-09-09T08:52:57.253Z"
+        },
+        {
+          "id": "id5yasdi86mtv3uzz7",
+          "text": "Marked done",
+          "at": "2026-09-10T05:47:14.467Z"
+        }
+      ],
+      "sources": [
+        {
+          "label": "Result",
+          "url": "https://abirulislam-ops.github.io/akij-resources-revenue-assurance/"
+        }
+      ]
+    },
+    {
+      "id": "id6joydl1pmtu1m38j",
+      "title": "Make an ultimate Strategy Planning & Analysis AI Agent along with the professional's point of view",
+      "desc": "We need to make an AI Agent for Strategic Planning & Analysis department. This will be align with the most effective market leader's professional business and marketing skills. We need to collect their decisions and observations for better outcome in different scenario.\n\nThe main objective of the project is to build an AI Agent or system who can make better decision in any critical situation.",
+      "status": "open",
+      "source": "manual",
+      "priority": "high",
+      "due": "2026-09-30",
+      "project": "Strategy Planning",
+      "tags": [
+        "AI Agent",
+        "Planning",
+        "Decision making Agent"
+      ],
+      "createdAt": "2026-09-09T11:56:33.379Z",
+      "updates": [
+        {
+          "id": "idvx85rvo8mtu1m38j",
+          "text": "Created",
+          "at": "2026-09-09T11:56:33.379Z"
+        }
+      ]
+    },
+    {
+      "id": "idfor7tl3nmtzhllmh",
+      "title": "Extract Business Intelligence from Business Brillianz (Issue 10August 2026)",
+      "desc": "In a Business magazine (Business Brillianz (Issue 10August 2026)), there are some interview that I have captured. Now I need to analysis them and make central business documents. Which we will use in our business analysis and strategy planning. Please make me a central word file where this will be a analytical form. which word file need to have the learning outcome of each speakers , also need to mark the references when used from the file and mark as number and at last page add a reference page. Just like a research paper.\n\nThen need to make a skill file. Which will be educated any Ai about the business perspective.",
+      "status": "open",
+      "source": "manual",
+      "priority": "medium",
+      "due": "2026-09-13",
+      "project": "Strategy Planning",
+      "tags": [
+        "Business Intelligence",
+        "skill file",
+        "Business Brillianz"
+      ],
+      "createdAt": "2026-09-13T07:22:55.289Z",
+      "updates": [
+        {
+          "id": "id2iogyfdwmtzhllmi",
+          "text": "Created",
+          "at": "2026-09-13T07:22:55.290Z"
+        }
+      ],
+      "sources": [
+        {
+          "label": "Local Source file",
+          "path": "C:\\Abir\\Akij Resources\\Strategic planning Department\\Documents\\Business Related Documents"
         }
       ]
     }
@@ -502,7 +675,7 @@
     {
       "id": "lk-sp-dash",
       "name": "Strategic Planning Dashboard (Streamlit)",
-      "url": "http://localhost:8501",
+      "url": "https://arlspa-dashboard.streamlit.app/",
       "category": "dashboard"
     },
     {
@@ -660,6 +833,20 @@
       "name": "Strategic Planning & Analysis SOP",
       "url": "https://drive.google.com/file/d/1BbjZ03Rw2AtWwe4hfqJhdHC5Jnl-pjBV/view",
       "category": "doc"
+    },
+    {
+      "id": "idck9c9gn7mts91uny",
+      "name": "All MCP Servers",
+      "url": "https://drive.google.com/drive/folders/182CGCAAqVvvSBuaeeLcFQHZtFMrCjEy1",
+      "category": "other",
+      "createdAt": "2026-09-08T05:49:13.726Z"
+    },
+    {
+      "id": "idz1ni3i6dmtv4gur2",
+      "name": "Revenue Assurance & Marketing Forecast",
+      "url": "https://abirulislam-ops.github.io/akij-resources-revenue-assurance/",
+      "category": "dashboard",
+      "createdAt": "2026-09-10T06:04:14.127Z"
     }
   ],
   "notes": [
