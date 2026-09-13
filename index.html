@@ -1075,12 +1075,20 @@ function toggleTaskStatus(taskId) {
   toast(t.status === "done" ? "Marked done ✓" : "Re-opened");
 }
 function moveTask(id, dir) {
-  if (state.tasks.some(x => x.order == null)) state.tasks.forEach((x, i) => { x.order = i; });
-  const arr = state.tasks.slice().sort((a, b) => (a.order == null ? 1e9 : a.order) - (b.order == null ? 1e9 : b.order));
-  const idx = arr.findIndex(x => x.id === id);
+  let list = state.tasks.slice();
+  if (taskFilter !== "all") list = list.filter(t => t.status === taskFilter);
+  if (tagFilter) list = list.filter(t => (t.tags || []).includes(tagFilter));
+  list.sort((a, b) => {
+    const ao = a.order == null ? 1e9 : a.order;
+    const bo = b.order == null ? 1e9 : b.order;
+    if (ao !== bo) return ao - bo;
+    const o = { progress:0, open:1, done:2 }; return (o[a.status]-o[b.status]);
+  });
+  list.forEach((x, i) => { x.order = i; });
+  const idx = list.findIndex(x => x.id === id);
   const j = idx + dir;
-  if (idx < 0 || j < 0 || j >= arr.length) return;
-  const tmp = arr[idx].order; arr[idx].order = arr[j].order; arr[j].order = tmp;
+  if (idx < 0 || j < 0 || j >= list.length) return;
+  const tmp = list[idx].order; list[idx].order = list[j].order; list[j].order = tmp;
   save(); renderTasks();
 }
 function openAddUpdate(taskId) {
