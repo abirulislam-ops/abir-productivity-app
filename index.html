@@ -924,7 +924,12 @@ function renderTasks() {
   let list = state.tasks.slice();
   if (taskFilter !== "all") list = list.filter(t => t.status === taskFilter);
   if (tagFilter) list = list.filter(t => (t.tags || []).includes(tagFilter));
-  list.sort((a, b) => { const o = { progress:0, open:1, done:2 }; return (o[a.status]-o[b.status]); });
+  list.sort((a, b) => {
+    const ao = a.order == null ? 1e9 : a.order;
+    const bo = b.order == null ? 1e9 : b.order;
+    if (ao !== bo) return ao - bo;
+    const o = { progress:0, open:1, done:2 }; return (o[a.status]-o[b.status]);
+  });
 
   if (!list.length) { $("#taskList").innerHTML = '<div class="empty"><div class="big">✅</div>No tasks in this view.</div>'; return; }
 
@@ -938,8 +943,8 @@ function renderTasks() {
       const link = s.url
         ? `<a class="src-link" href="${esc(s.url)}" target="_blank" rel="noopener">${label} ↗</a>`
         : `<span class="src-link path" title="${esc(s.path || s.label || "")}">${label}</span>`;
-      const rm = READ_ONLY ? "" : `<button class="src-del" data-rem-src="${esc(t.id)}" data-src-i="${i}" title="Remove source">×</button>`;
-      return `<span class="src-wrap">${link}${rm}</span>`;
+      const tools = READ_ONLY ? "" : `<button class="src-del" data-edit-src="${esc(t.id)}" data-src-i="${i}" title="Edit source">✎</button><button class="src-del" data-rem-src="${esc(t.id)}" data-src-i="${i}" title="Remove source">×</button>`;
+      return `<span class="src-wrap">${link}${tools}</span>`;
     }).join("");
     const addBtn = READ_ONLY ? "" : `<button class="src-add" data-add-src="${esc(t.id)}" title="Add source">+ source</button>`;
     const srcBlock = (srcLinks || addBtn) ? `<div class="task-sources">🔗 ${srcLinks}${addBtn}</div>` : "";
@@ -947,6 +952,8 @@ function renderTasks() {
     const upsBlock = ups.length ? `<div class="task-updates">${ups.slice().reverse().map(u => `<div class="upd"><span class="upd-at">${fmtDateTime(u.at)}</span>${esc(u.text)}</div>`).join("")}</div>` : "";
     const reviewBlock = t.review ? `<div class="task-review"><b>opencode:</b> ${esc(t.review)}</div>` : "";
     const actions = READ_ONLY ? "" : `
+      <button class="btn ghost small" data-move="${esc(t.id)}" data-dir="-1" title="Move up">↑</button>
+      <button class="btn ghost small" data-move="${esc(t.id)}" data-dir="1" title="Move down">↓</button>
       <button class="btn ghost small" data-edit="${esc(t.id)}">Edit</button>
       <button class="btn ghost small" data-update="${esc(t.id)}">+ Update</button>
       <button class="btn ghost small" data-ask="${esc(t.id)}">Ask opencode</button>`;
@@ -988,10 +995,12 @@ function renderTasks() {
   }
 
   $$("#taskList [data-toggle]").forEach(el => el.onclick = () => toggleTaskStatus(el.dataset.toggle));
+  $$("#taskList [data-move]").forEach(el => el.onclick = () => moveTask(el.dataset.move, +el.dataset.dir));
   $$("#taskList [data-edit]").forEach(el => el.onclick = () => openEditTask(el.dataset.edit));
   $$("#taskList [data-update]").forEach(el => el.onclick = () => openAddUpdate(el.dataset.update));
   $$("#taskList [data-ask]").forEach(el => el.onclick = () => openRequest("change", el.dataset.ask));
   $$("#taskList [data-add-src]").forEach(el => el.onclick = () => openSourceForm(el.dataset.addSrc));
+  $$("#taskList [data-edit-src]").forEach(el => el.onclick = () => openSourceForm(el.dataset.editSrc, +el.dataset.srcI));
   $$("#taskList [data-rem-src]").forEach(el => el.onclick = () => { removeSource(el.dataset.remSrc, +el.dataset.srcI); });
   renderOpencodeReview();
 }
@@ -1017,18 +1026,19 @@ function removeSource(taskId, i) {
   t.sources.splice(i, 1);
   save(); renderTasks(); toast("Source removed");
 }
-function openSourceForm(taskId) {
+function openSourceForm(taskId, index) {
   const task = state.tasks.find(x => x.id === taskId);
   if (!task) return;
+  const editing = (typeof index === "number") ? (task.sources || [])[index] : null;
   $("#modal").innerHTML = `
-    <h3>Add source to task</h3>
+    <h3>${editing ? "Edit source" : "Add source to task"}</h3>
     <div class="notice" style="margin-bottom:12px">Task: <b>${esc(task.title)}</b></div>
-    <div class="field"><label>Label</label><input id="s-label" placeholder="e.g. Policy draft, SOP, skill file"></div>
-    <div class="field"><label>Link (URL) — optional</label><input id="s-url" placeholder="https://drive.google.com/... or file:///..."></div>
-    <div class="field"><label>Local path — optional (shown if no link)</label><input id="s-path" placeholder="Documents/SOD of all department/..."></div>
+    <div class="field"><label>Label</label><input id="s-label" value="${esc(editing && editing.label ? editing.label : "")}" placeholder="e.g. Policy draft, SOP, skill file"></div>
+    <div class="field"><label>Link (URL) — optional</label><input id="s-url" value="${esc(editing && editing.url ? editing.url : "")}" placeholder="https://drive.google.com/... or file:///..."></div>
+    <div class="field"><label>Local path — optional (shown if no link)</label><input id="s-path" value="${esc(editing && editing.path ? editing.path : "")}" placeholder="Documents/SOD of all department/..."></div>
     <div class="modal-actions">
       <button class="btn ghost" id="s-cancel">Cancel</button>
-      <button class="btn" id="s-save">Save source</button>
+      <button class="btn" id="s-save">${editing ? "Save changes" : "Save source"}</button>
     </div>`;
   openModal();
   $("#s-cancel").onclick = closeModal;
@@ -1040,8 +1050,13 @@ function openSourceForm(taskId) {
     const src = { label: label || (url || path) };
     if (url) src.url = url;
     if (path) src.path = path;
-    task.sources = (task.sources || []).concat([src]);
-    save(); closeModal(); renderTasks(); toast("Source added");
+    if (editing) {
+      task.sources = (task.sources || []).slice();
+      task.sources[index] = src;
+    } else {
+      task.sources = (task.sources || []).concat([src]);
+    }
+    save(); closeModal(); renderTasks(); toast(editing ? "Source updated ✓" : "Source added");
   };
 }
 
@@ -1058,6 +1073,15 @@ function toggleTaskStatus(taskId) {
   else { t.status = "done"; addUpdate(taskId, "Marked done"); }
   save(); renderTasks();
   toast(t.status === "done" ? "Marked done ✓" : "Re-opened");
+}
+function moveTask(id, dir) {
+  if (state.tasks.some(x => x.order == null)) state.tasks.forEach((x, i) => { x.order = i; });
+  const arr = state.tasks.slice().sort((a, b) => (a.order == null ? 1e9 : a.order) - (b.order == null ? 1e9 : b.order));
+  const idx = arr.findIndex(x => x.id === id);
+  const j = idx + dir;
+  if (idx < 0 || j < 0 || j >= arr.length) return;
+  const tmp = arr[idx].order; arr[idx].order = arr[j].order; arr[j].order = tmp;
+  save(); renderTasks();
 }
 function openAddUpdate(taskId) {
   const t = state.tasks.find(x => x.id === taskId);
@@ -1266,7 +1290,7 @@ function renderLinks() {
     $("#linkList").innerHTML = '<div class="empty"><div class="big">🔗</div>No links yet.<br>Add your dashboards, Google Docs &amp; Sheets, and useful links.</div>';
     return;
   }
-  $("#linkList").innerHTML = list.map(l => {
+  $("#linkList").innerHTML = list.map((l, i) => {
     const s = LINK_STYLES[l.category] || LINK_STYLES.other;
     return `
     <div class="link-card">
@@ -1276,14 +1300,24 @@ function renderLinks() {
         <div class="link-url">${esc(l.url)}</div>
       </div>
       <div class="row">
+        <button class="btn ghost small" data-move="${esc(l.id)}" data-dir="-1" title="Move up">↑</button>
+        <button class="btn ghost small" data-move="${esc(l.id)}" data-dir="1" title="Move down">↓</button>
         <a href="${esc(l.url)}" target="_blank" rel="noopener">Open ↗</a>
         <button class="btn ghost small" data-edit="${esc(l.id)}">Edit</button>
         <button class="btn danger small" data-del="${esc(l.id)}">Remove</button>
       </div>
     </div>`;
   }).join("");
+  $$("#linkList [data-move]").forEach(b => b.onclick = () => moveLink(b.dataset.move, +b.dataset.dir));
   $$("#linkList [data-del]").forEach(b => b.onclick = () => { state.links = state.links.filter(x => x.id !== b.dataset.del); state.removedLinks = state.removedLinks || []; if (!state.removedLinks.includes(b.dataset.del)) state.removedLinks.push(b.dataset.del); save(); renderLinks(); toast("Link removed"); });
   $$("#linkList [data-edit]").forEach(b => b.onclick = () => openLinkForm(state.links.find(x => x.id === b.dataset.edit)));
+}
+function moveLink(id, dir) {
+  const i = state.links.findIndex(x => x.id === id);
+  const j = i + dir;
+  if (i < 0 || j < 0 || j >= state.links.length) return;
+  const tmp = state.links[i]; state.links[i] = state.links[j]; state.links[j] = tmp;
+  save(); renderLinks();
 }
 function openLinkForm(link) {
   const isEdit = !!link;
