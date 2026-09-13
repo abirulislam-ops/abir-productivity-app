@@ -404,6 +404,38 @@
   body.readonly #sh-addrow, body.readonly #sh-addcol,
   body.readonly #reviewEmail, body.readonly #saveGithubBtn,
   body.readonly #nav button[data-view="focus"] { display: none !important; }
+
+  /* --- Board (Kanban) --- */
+  .board { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(250px, 1fr); gap: 12px; overflow-x: auto; padding-bottom: 10px; }
+  .board-col { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 10px; min-height: 200px; }
+  .board-col-head { display: flex; align-items: center; justify-content: space-between; padding: 4px 6px 10px; font-weight: 600; }
+  .board-col-head .cnt { font-size: 12px; color: var(--muted); background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 2px 8px; }
+  .board-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; cursor: grab; transition: .12s; }
+  .board-card:hover { border-color: var(--border2); }
+  .board-card.dragging { opacity: .45; }
+  .board-col.drag-over { border-color: var(--accent); background: rgba(91,140,255,.06); }
+  .board-card .bt { font-weight: 600; font-size: 13px; }
+  .board-card .bm { font-size: 12px; color: var(--muted); margin-top: 4px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .board-empty { color: var(--muted); font-size: 12px; text-align: center; padding: 14px 0; }
+
+  /* --- Roadmap / timeline --- */
+  .roadmap-group { margin-bottom: 20px; }
+  .roadmap-group > h3 { font-size: 14px; margin: 0 0 10px; }
+  .roadmap-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .roadmap-row .r-title { flex: 0 0 220px; font-size: 13px; }
+  .roadmap-track { flex: 1; position: relative; height: 26px; background: var(--bg2); border-radius: 7px; overflow: hidden; }
+  .roadmap-bar { position: absolute; top: 5px; height: 16px; border-radius: 6px; background: linear-gradient(90deg, #5b8cff, #7ca8ff); color: #fff; font-size: 11px; line-height: 16px; padding: 0 8px; white-space: nowrap; overflow: hidden; }
+  .roadmap-bar.done { background: linear-gradient(90deg, #34d399, #6ee7b7); }
+  .roadmap-bar .lbl { opacity: .95; }
+
+  /* --- Comments --- */
+  .comment { border: 1px solid var(--border); border-radius: 10px; padding: 9px 11px; margin-bottom: 8px; }
+  .comment .c-head { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  .comment .c-body { font-size: 13px; }
+
+  /* --- Identity picker --- */
+  #mePicker { display: inline-flex; align-items: center; gap: 6px; }
+  #mePicker select { background: var(--bg2); border: 1px solid var(--border2); color: var(--text); border-radius: 7px; padding: 4px 8px; }
 </style>
 </head>
 <body>
@@ -421,6 +453,8 @@
       <nav id="nav">
         <button data-view="dashboard" class="active"><span class="dot">📊</span> Dashboard</button>
         <button data-view="tasks"><span class="dot">✅</span> Tasks</button>
+        <button data-view="board"><span class="dot">📋</span> Board</button>
+        <button data-view="roadmap"><span class="dot">🗺</span> Roadmap</button>
         <button data-view="focus"><span class="dot">🎯</span> Focus &amp; Plan</button>
         <button data-view="links"><span class="dot">🔗</span> Links</button>
         <button data-view="notes"><span class="dot">📝</span> Notes</button>
@@ -434,6 +468,10 @@
         <div class="bell-wrap">
           <button class="bell" id="bellBtn">🔔<span class="count" id="bellCount" style="display:none">0</span></button>
           <div class="bell-drop" id="bellDrop"></div>
+        </div>
+        <div id="mePicker">
+          <span class="small muted">👤</span>
+          <select id="meSelect" title="Who are you viewing as?"></select>
         </div>
         <button class="bell" id="themeBtn" title="Toggle theme">🌙</button>
         <button class="btn small" id="saveGithubBtn" title="Publish current workspace to GitHub Pages">💾 Save to GitHub</button>
@@ -492,6 +530,30 @@
     <div class="task-filters" id="taskFilters"></div>
     <div id="opencodeReview"></div>
     <div id="taskList"></div>
+  </section>
+
+  <!-- ================= BOARD (KANBAN) ================= -->
+  <section class="view" id="view-board">
+    <div class="page-title">
+      <div>
+        <h2>Board</h2>
+        <p>Drag cards across columns to change status. Filter by sprint.</p>
+      </div>
+      <button class="btn" id="reqTaskBtn2">+ New task</button>
+    </div>
+    <div id="boardSprintBar"></div>
+    <div class="board" id="board"></div>
+  </section>
+
+  <!-- ================= ROADMAP ================= -->
+  <section class="view" id="view-roadmap">
+    <div class="page-title">
+      <div>
+        <h2>Roadmap</h2>
+        <p>Timeline by sprint and due date. Green = done.</p>
+      </div>
+    </div>
+    <div id="roadmap"></div>
   </section>
 
   <!-- ================= FOCUS & PLAN ================= -->
@@ -776,6 +838,8 @@ function showView(name) {
   $("#view-" + name).classList.add("active");
   if (name === "notes") renderNotes();
   if (name === "focus") renderFocus();
+  if (name === "board") renderBoard();
+  if (name === "roadmap") renderRoadmap();
 }
 
 /* ============================================================
@@ -954,7 +1018,7 @@ function renderTasks() {
   const grpBtn = $("#taskFilters [data-grp]"); if (grpBtn) grpBtn.onclick = () => { taskGroup = !taskGroup; renderTasks(); };
   $$("#taskFilters [data-tag]").forEach(c => c.onclick = () => { tagFilter = c.dataset.tag === "__none" ? null : c.dataset.tag; renderTasks(); });
 
-  let list = state.tasks.slice();
+  let list = visibleTasks().slice();
   if (taskFilter !== "all") list = list.filter(t => t.status === taskFilter);
   if (tagFilter) list = list.filter(t => (t.tags || []).includes(tagFilter));
   list.sort((a, b) => {
@@ -976,6 +1040,11 @@ function renderTasks() {
     const assigneeChip = assignee ? `<span class="badge" style="background:${assignee.color}22;color:${assignee.color}">👤 ${esc(assignee.name)}</span>` : "";
     const pointsChip = t.points != null ? `<span class="badge">⚡ ${t.points} pts</span>` : "";
     const sprintChip = t.sprint ? `<span class="badge">🏁 ${esc(t.sprint)}</span>` : "";
+    const parent = parentOf(t);
+    const parentChip = parent ? `<span class="small muted">↳ under ${esc(parent.title)}</span>` : "";
+    const kids = childrenOf(t.id);
+    const kidsChip = kids.length ? `<span class="small muted">· ${kids.filter(k=>k.status==="done").length}/${kids.length} subtasks</span>` : "";
+    const commentChip = (t.comments || []).length ? `<span class="small muted">· 💬 ${t.comments.length}</span>` : "";
     const srcLinks = (t.sources || []).map((s, i) => {
       const label = esc(s.label || s.url || s.path || "");
       const link = s.url
@@ -994,6 +1063,7 @@ function renderTasks() {
       <button class="btn ghost small" data-move="${esc(t.id)}" data-dir="1" title="Move down">↓</button>
       <button class="btn ghost small" data-edit="${esc(t.id)}">Edit</button>
       <button class="btn ghost small" data-update="${esc(t.id)}">+ Update</button>
+      <button class="btn ghost small" data-comment="${esc(t.id)}">💬</button>
       <button class="btn ghost small" data-ask="${esc(t.id)}">Ask opencode</button>`;
     return `
     <div class="task-item" data-id="${esc(t.id)}">
@@ -1006,7 +1076,10 @@ function renderTasks() {
           ${srcBadge} ${priBadge} ${assigneeChip} ${pointsChip} ${sprintChip}
           ${t.project ? `<span class="small muted">${esc(t.project)}</span>` : ""}
           ${t.due ? `<span class="small muted">due ${esc(t.due)}</span>` : ""}
+          ${parentChip}
+          ${kidsChip}
           ${tagBadges}
+          ${commentChip}
           ${ups.length ? `<span class="small muted">· ${ups.length} update${ups.length>1?"s":""}</span>` : ""}
         </div>
         ${reviewBlock}
@@ -1036,6 +1109,7 @@ function renderTasks() {
   $$("#taskList [data-move]").forEach(el => el.onclick = () => moveTask(el.dataset.move, +el.dataset.dir));
   $$("#taskList [data-edit]").forEach(el => el.onclick = () => openEditTask(el.dataset.edit));
   $$("#taskList [data-update]").forEach(el => el.onclick = () => openAddUpdate(el.dataset.update));
+  $$("#taskList [data-comment]").forEach(el => el.onclick = () => openComments(el.dataset.comment));
   $$("#taskList [data-ask]").forEach(el => el.onclick = () => openRequest("change", el.dataset.ask));
   $$("#taskList [data-add-src]").forEach(el => el.onclick = () => openSourceForm(el.dataset.addSrc));
   $$("#taskList [data-edit-src]").forEach(el => el.onclick = () => openSourceForm(el.dataset.editSrc, +el.dataset.srcI));
@@ -1109,11 +1183,11 @@ function toggleTaskStatus(taskId) {
   if (!t) return;
   if (t.status === "done") { t.status = "open"; addUpdate(taskId, "Re-opened (re-continued)"); }
   else { t.status = "done"; addUpdate(taskId, "Marked done"); }
-  save(); renderTasks();
+  save(); renderTasks(); renderBoard(); renderRoadmap();
   toast(t.status === "done" ? "Marked done ✓" : "Re-opened");
 }
 function moveTask(id, dir) {
-  let list = state.tasks.slice();
+  let list = visibleTasks().slice();
   if (taskFilter !== "all") list = list.filter(t => t.status === taskFilter);
   if (tagFilter) list = list.filter(t => (t.tags || []).includes(tagFilter));
   list.sort((a, b) => {
@@ -1157,6 +1231,7 @@ function openEditTask(taskId) {
   const typeOpts = Object.keys(ISSUE_TYPES).map(k => `<option value="${k}" ${t.type===k?"selected":""}>${ISSUE_TYPES[k].icon} ${ISSUE_TYPES[k].label}</option>`).join("");
   const assigneeOpts = `<option value="">— unassigned —</option>` + TEAM.map(m => `<option value="${m.id}" ${t.assignee===m.id?"selected":""}>${esc(m.name)} (${m.role})</option>`).join("");
   const pointsOpts = ["", "1", "2", "3", "5", "8"].map(p => `<option value="${p}" ${String(t.points ?? "")===p?"selected":""}>${p === "" ? "—" : p}</option>`).join("");
+  const parentOpts = `<option value="">— none (top level) —</option>` + state.tasks.filter(x => x.id !== t.id).map(x => `<option value="${x.id}" ${t.parentId===x.id?"selected":""}>${esc(x.title)}</option>`).join("");
   $("#modal").innerHTML = `
     <h3>Edit task</h3>
     <div class="field"><label>Title *</label><input id="e-title" value="${esc(t.title)}"></div>
@@ -1179,6 +1254,7 @@ function openEditTask(taskId) {
     </div>
     <div class="row" style="gap:10px">
       <div class="field" style="flex:1"><label>Sprint</label><input id="e-sprint" value="${esc(t.sprint || "")}" placeholder="e.g. Week 38"></div>
+      <div class="field" style="flex:1"><label>Parent task</label><select id="e-parent">${parentOpts}</select></div>
     </div>
     <div class="field"><label>Tags (comma-separated)</label><input id="e-tags" value="${esc((t.tags || []).join(", "))}"></div>
     <div class="modal-actions">
@@ -1202,11 +1278,12 @@ function openEditTask(taskId) {
     t.points = $("#e-points").value === "" ? null : +$("#e-points").value;
     t.estimatedHours = $("#e-hours").value ? +$("#e-hours").value : null;
     t.sprint = $("#e-sprint").value.trim() || null;
+    t.parentId = $("#e-parent").value || null;
     t.priority = $("#e-prio").value;
     t.project = $("#e-project").value.trim();
     t.due = $("#e-due").value || null;
     t.tags = $("#e-tags").value.split(",").map(s => s.trim()).filter(Boolean);
-    save(); closeModal(); renderTasks(); toast("Task updated ✓");
+    save(); closeModal(); renderTasks(); renderBoard(); renderRoadmap(); toast("Task updated ✓");
   };
 }
 function openAddTask(preTitle, preDesc) {
@@ -1214,6 +1291,7 @@ function openAddTask(preTitle, preDesc) {
   const typeOpts = Object.keys(ISSUE_TYPES).map(k => `<option value="${k}" ${k==="task"?"selected":""}>${ISSUE_TYPES[k].icon} ${ISSUE_TYPES[k].label}</option>`).join("");
   const assigneeOpts = `<option value="">— unassigned —</option>` + TEAM.map(m => `<option value="${m.id}">${esc(m.name)} (${m.role})</option>`).join("");
   const pointsOpts = ["", "1", "2", "3", "5", "8"].map(p => `<option value="${p}">${p === "" ? "—" : p}</option>`).join("");
+  const parentOpts = `<option value="">— none (top level) —</option>` + state.tasks.map(x => `<option value="${x.id}">${esc(x.title)}</option>`).join("");
   $("#modal").innerHTML = `
     <h3>New task</h3>
     <div class="notice" style="margin-bottom:12px">Adds instantly — you control it. opencode reviews at day end.</div>
@@ -1235,6 +1313,9 @@ function openAddTask(preTitle, preDesc) {
       <div class="field" style="flex:1"><label>Project</label><input id="a-project" placeholder="e.g. Strategic Planning"></div>
       <div class="field" style="flex:1"><label>Sprint</label><input id="a-sprint" placeholder="e.g. Week 38"></div>
     </div>
+    <div class="row" style="gap:10px">
+      <div class="field" style="flex:1"><label>Parent task</label><select id="a-parent">${parentOpts}</select></div>
+    </div>
     <div class="field"><label>Tags (comma-separated)</label><input id="a-tags" placeholder="strategy, reporting"></div>
     <div class="modal-actions">
       <button class="btn ghost" id="a-cancel">Cancel</button>
@@ -1254,6 +1335,7 @@ function openAddTask(preTitle, preDesc) {
       points: $("#a-points").value === "" ? null : +$("#a-points").value,
       estimatedHours: $("#a-hours").value ? +$("#a-hours").value : null,
       sprint: $("#a-sprint").value.trim() || null,
+      parentId: $("#a-parent").value || null,
       priority: $("#a-prio").value,
       due: $("#a-due").value || null,
       project: $("#a-project").value.trim(),
@@ -1263,8 +1345,160 @@ function openAddTask(preTitle, preDesc) {
     };
     state.tasks.push(t);
     addUpdate(t.id, "Created");
-    save(); closeModal(); renderTasks(); toast("Task added ✓");
+    save(); closeModal(); renderTasks(); renderBoard(); renderRoadmap(); toast("Task added ✓");
   };
+}
+
+/* ---------- Team identity & visibility ---------- */
+function roleOf(memberId) {
+  const m = TEAM_BY_ID[memberId];
+  return m ? m.role : "manager";
+}
+function visibleTasks() {
+  const me = state.me;
+  if (!me || roleOf(me) === "manager") return state.tasks;
+  const myRole = roleOf(me);
+  const peerIds = TEAM.filter(m => m.role === "officer" && m.id !== me).map(m => m.id);
+  return state.tasks.filter(t => {
+    if (t.assignee === me) return true;
+    if (!t.assignee) return true;
+    if (myRole === "officer" && peerIds.includes(t.assignee)) return true;
+    return false;
+  });
+}
+function renderMePicker() {
+  const opts = [`<option value="">👥 Everyone (Manager view)</option>`]
+    .concat(TEAM.map(m => `<option value="${m.id}" ${state.me === m.id ? "selected" : ""}>${esc(m.name)} (${m.role})</option>`))
+    .join("");
+  $("#meSelect").innerHTML = opts;
+  $("#meSelect").onchange = () => { state.me = $("#meSelect").value || null; save(); renderAll(); };
+}
+
+/* ---------- Hierarchy ---------- */
+function childrenOf(id) { return state.tasks.filter(t => t.parentId === id); }
+function parentOf(t) { return t.parentId ? state.tasks.find(x => x.id === t.parentId) : null; }
+
+/* ---------- Board (Kanban) ---------- */
+let boardSprint = "all";
+function sprintsOf() {
+  const set = new Set();
+  state.tasks.forEach(t => { if (t.sprint) set.add(t.sprint); });
+  return Array.from(set).sort();
+}
+function boardCard(t) {
+  const typeInfo = ISSUE_TYPES[t.type] || ISSUE_TYPES.task;
+  const assignee = TEAM_BY_ID[t.assignee];
+  const kids = childrenOf(t.id).length;
+  const meta = [
+    assignee ? `👤 ${esc(assignee.name)}` : "",
+    t.points != null ? `⚡${t.points}` : "",
+    t.project ? esc(t.project) : "",
+    t.due ? `⏳${esc(t.due)}` : "",
+    kids ? `⊞${kids}` : "",
+    (t.comments || []).length ? `💬${t.comments.length}` : ""
+  ].filter(Boolean).join(" · ");
+  return `<div class="board-card" draggable="true" data-id="${esc(t.id)}">
+    <div class="bt">${typeInfo.icon} ${esc(t.title)}</div>
+    ${meta ? `<div class="bm">${meta}</div>` : ""}
+  </div>`;
+}
+function renderBoard() {
+  const sprints = sprintsOf();
+  const bar = `<button class="chip ${boardSprint === "all" ? "active" : ""}" data-bs="all">All sprints</button>` +
+    sprints.map(s => `<button class="chip ${boardSprint === s ? "active" : ""}" data-bs="${esc(s)}">${esc(s)}</button>`).join("");
+  $("#boardSprintBar").innerHTML = bar;
+  $$("#boardSprintBar [data-bs]").forEach(c => c.onclick = () => { boardSprint = c.dataset.bs; renderBoard(); });
+
+  const order = ["backlog", "open", "progress", "review", "blocked", "done"];
+  const list = visibleTasks().filter(t => boardSprint === "all" || t.sprint === boardSprint);
+  $("#board").innerHTML = order.map(st => {
+    const items = list.filter(t => t.status === st);
+    const cards = items.map(boardCard).join("");
+    return `<div class="board-col" data-col="${st}">
+      <div class="board-col-head">${STATUS[st]} <span class="cnt">${items.length}</span></div>
+      ${cards || `<div class="board-empty">Drop here</div>`}
+    </div>`;
+  }).join("");
+  wireBoardDrag();
+}
+function wireBoardDrag() {
+  let dragId = null;
+  $$("#board .board-card").forEach(card => {
+    card.ondragstart = e => { dragId = card.dataset.id; card.classList.add("dragging"); e.dataTransfer.effectAllowed = "move"; };
+    card.ondragend = () => { card.classList.remove("dragging"); $$("#board .board-col").forEach(c => c.classList.remove("drag-over")); };
+  });
+  $$("#board .board-col").forEach(col => {
+    col.ondragover = e => { e.preventDefault(); col.classList.add("drag-over"); };
+    col.ondragleave = () => col.classList.remove("drag-over");
+    col.ondrop = e => { e.preventDefault(); col.classList.remove("drag-over"); if (!dragId) return; moveToStatus(dragId, col.dataset.col); dragId = null; };
+  });
+}
+function moveToStatus(id, status) {
+  const t = state.tasks.find(x => x.id === id);
+  if (!t || t.status === status) return;
+  t.status = status;
+  addUpdate(id, "Status → " + (STATUS[status] || status));
+  save(); renderBoard(); renderTasks();
+  toast("Moved to " + (STATUS[status] || status));
+}
+
+/* ---------- Roadmap / timeline ---------- */
+function renderRoadmap() {
+  const html = [];
+  sprintsOf().forEach(s => {
+    const ts = visibleTasks().filter(t => t.sprint === s);
+    html.push(`<div class="roadmap-group"><h3>🏁 ${esc(s)}</h3>${roadmapRows(ts)}</div>`);
+  });
+  const noSprint = visibleTasks().filter(t => !t.sprint);
+  if (noSprint.length) html.push(`<div class="roadmap-group"><h3>📌 No sprint</h3>${roadmapRows(noSprint)}</div>`);
+  $("#roadmap").innerHTML = html.join("") || `<div class="empty"><div class="big">🗺</div>No tasks yet. Add tasks with a sprint or due date to see a timeline.</div>`;
+}
+function roadmapRows(ts) {
+  const withDue = ts.filter(t => t.due);
+  const noDue = ts.filter(t => !t.due);
+  const all = visibleTasks().filter(t => t.due);
+  let min = all.length ? all.reduce((m, t) => t.due < m ? t.due : m, all[0].due) : todayStr();
+  let max = all.length ? all.reduce((m, t) => t.due > m ? t.due : m, all[0].due) : todayStr();
+  const span = Math.max(1, (new Date(max) - new Date(min)) / 86400000);
+  const rows = withDue.map(t => {
+    const off = Math.min(94, Math.max(0, (new Date(t.due) - new Date(min)) / 86400000) / span * 100);
+    const w = Math.max(7, 90 / span);
+    const done = t.status === "done";
+    return `<div class="roadmap-row"><div class="r-title" title="${esc(t.title)}">${esc(t.title)}</div><div class="roadmap-track"><div class="roadmap-bar ${done ? "done" : ""}" style="left:${off}%;width:${w}%"><span class="lbl">${esc(t.due)}</span></div></div></div>`;
+  });
+  const noduerows = noDue.map(t => `<div class="roadmap-row"><div class="r-title">${esc(t.title)}</div><div class="small muted">— no due date</div></div>`);
+  return rows.join("") + noduerows.join("");
+}
+
+/* ---------- Comments ---------- */
+function openComments(taskId) {
+  const t = state.tasks.find(x => x.id === taskId);
+  if (!t) return;
+  const comments = (t.comments || []).map(c => {
+    const who = TEAM_BY_ID[c.by] ? TEAM_BY_ID[c.by].name : (c.by || "you");
+    return `<div class="comment"><div class="c-head"><span>👤 ${esc(who)}</span><span>${fmtDateTime(c.at)}</span></div><div class="c-body">${esc(c.text)}</div></div>`;
+  }).join("");
+  $("#modal").innerHTML = `
+    <h3>Comments — ${esc(t.title)}</h3>
+    <div id="c-list" style="max-height:320px;overflow:auto;margin-bottom:12px">${comments || `<div class="small muted">No comments yet.</div>`}</div>
+    <div class="field"><textarea id="c-text" placeholder="Add a comment…"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn ghost" id="c-cancel">Close</button>
+      <button class="btn" id="c-save">Add comment</button>
+    </div>`;
+  openModal();
+  $("#c-cancel").onclick = closeModal;
+  $("#c-save").onclick = () => {
+    const text = $("#c-text").value.trim();
+    if (!text) { toast("Write something first"); return; }
+    addComment(taskId, text);
+    save(); closeModal(); renderTasks(); renderBoard(); toast("Comment added ✓");
+  };
+}
+function addComment(taskId, text) {
+  const t = state.tasks.find(x => x.id === taskId);
+  if (!t) return;
+  t.comments = (t.comments || []).concat([{ id: uid(), by: state.me || "you", text: text.trim(), at: new Date().toISOString() }]);
 }
 
 /* ---------- Requests ---------- */
@@ -1801,6 +2035,7 @@ function renderAll() {
   renderDashFocus();
   renderDashMits();
   renderFocus();
+  renderMePicker();
 }
 
 /* ============================================================
@@ -2026,7 +2261,7 @@ function globalSearch(q) {
   const box = $("#searchResults");
   if (!q) { box.classList.remove("show"); box.innerHTML = ""; return; }
   const res = [];
-  for (const t of state.tasks) if ((t.title + " " + (t.desc || "") + " " + (t.project || "") + " " + (t.tags || []).join(" ")).toLowerCase().includes(q)) res.push({ type: "task", title: t.title, sub: (t.project || "") + " · " + (STATUS[t.status] || t.status), goto: () => showView("tasks") });
+  for (const t of visibleTasks()) if ((t.title + " " + (t.desc || "") + " " + (t.project || "") + " " + (t.tags || []).join(" ")).toLowerCase().includes(q)) res.push({ type: "task", title: t.title, sub: (t.project || "") + " · " + (STATUS[t.status] || t.status), goto: () => showView("tasks") });
   for (const n of state.notes) if ((n.title + " " + (n.content || "").replace(/<[^>]+>/g, " ")).toLowerCase().includes(q)) res.push({ type: "note · " + n.type, title: n.title, sub: "", goto: () => { showView("notes"); noteType = n.type; renderNoteTabs(); activeNoteId = n.id; renderNoteList(); renderNoteMain(); } });
   for (const l of state.links) if ((l.name + " " + (l.url || "")).toLowerCase().includes(q)) res.push({ type: "link", title: l.name, sub: l.url, goto: () => window.open(l.url, "_blank") });
   for (const m of (state.meetings || [])) if ((m.title + " " + (m.notes || "")).toLowerCase().includes(q)) res.push({ type: "meeting", title: m.title, sub: m.date + " " + (m.time || ""), goto: () => showView("focus") });
@@ -2261,6 +2496,7 @@ function toggleTheme() {
 /* ---------- Bindings & init ---------- */
 $("#refreshBtn").onclick = syncFromOpencode;
 $("#reqTaskBtn").onclick = () => openAddTask();
+$("#reqTaskBtn2").onclick = () => openAddTask();
 $("#reqListBtn").onclick = renderRequests;
 $("#addLinkBtn").onclick = () => openLinkForm(null);
 $("#newNoteBtn").onclick = () => createNote(noteType);
