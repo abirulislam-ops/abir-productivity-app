@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-13T09:03:05.734Z",
+  "updatedAt": "2026-09-13T09:10:25.318Z",
   "tasks": [
     {
       "id": "t1",
@@ -23,7 +23,12 @@
           "text": "Marked done",
           "at": "2026-09-08T03:27:47.534Z"
         }
-      ]
+      ],
+      "tagged": [],
+      "comments": [],
+      "type": "task",
+      "points": null,
+      "estimatedHours": null
     },
     {
       "id": "t2",
@@ -51,7 +56,13 @@
           "text": "Marked done",
           "at": "2026-09-08T03:27:59.482Z"
         }
-      ]
+      ],
+      "tags": [],
+      "tagged": [],
+      "comments": [],
+      "type": "task",
+      "points": null,
+      "estimatedHours": null
     },
     {
       "id": "t3",
@@ -79,7 +90,12 @@
           "text": "Marked done",
           "at": "2026-09-08T03:28:06.555Z"
         }
-      ]
+      ],
+      "tagged": [],
+      "comments": [],
+      "type": "task",
+      "points": null,
+      "estimatedHours": null
     },
     {
       "id": "t4",
@@ -92,7 +108,13 @@
       "project": "Tooling",
       "createdAt": "2026-08-18T08:00:00Z",
       "sources": [],
-      "updates": []
+      "updates": [],
+      "tags": [],
+      "tagged": [],
+      "comments": [],
+      "type": "task",
+      "points": null,
+      "estimatedHours": null
     },
     {
       "id": "t5",
@@ -134,7 +156,12 @@
           "text": "Re-opened (re-continued)",
           "at": "2026-09-09T07:35:52.518Z"
         }
-      ]
+      ],
+      "tagged": [],
+      "comments": [],
+      "type": "task",
+      "points": null,
+      "estimatedHours": null
     },
     {
       "id": "t6",
@@ -191,7 +218,12 @@
           "text": "Marked done",
           "at": "2026-09-08T03:28:09.847Z"
         }
-      ]
+      ],
+      "tagged": [],
+      "comments": [],
+      "type": "task",
+      "points": null,
+      "estimatedHours": null
     },
     {
       "id": "t7",
@@ -246,7 +278,12 @@
           "text": "Marked done",
           "at": "2026-09-08T03:28:11.521Z"
         }
-      ]
+      ],
+      "tagged": [],
+      "comments": [],
+      "type": "task",
+      "points": null,
+      "estimatedHours": null
     },
     {
       "id": "t8",
@@ -278,7 +315,12 @@
         }
       ],
       "createdAt": "2026-08-23T08:00:00Z",
-      "updates": []
+      "updates": [],
+      "tagged": [],
+      "comments": [],
+      "type": "task",
+      "points": null,
+      "estimatedHours": null
     },
     {
       "id": "t9",
@@ -306,7 +348,12 @@
         }
       ],
       "createdAt": "2026-08-29T08:00:00Z",
-      "updates": []
+      "updates": [],
+      "tagged": [],
+      "comments": [],
+      "type": "task",
+      "points": null,
+      "estimatedHours": null
     },
     {
       "id": "t10",
@@ -329,7 +376,12 @@
         }
       ],
       "createdAt": "2026-08-18T08:00:00Z",
-      "updates": []
+      "updates": [],
+      "tagged": [],
+      "comments": [],
+      "type": "task",
+      "points": null,
+      "estimatedHours": null
     },
     {
       "id": "t11",
@@ -352,7 +404,12 @@
         }
       ],
       "createdAt": "2026-08-24T08:00:00Z",
-      "updates": []
+      "updates": [],
+      "tagged": [],
+      "comments": [],
+      "type": "task",
+      "points": null,
+      "estimatedHours": null
     },
     {
       "id": "t12",
@@ -370,7 +427,12 @@
       ],
       "sources": [],
       "createdAt": "2026-08-20T08:00:00Z",
-      "updates": []
+      "updates": [],
+      "tagged": [],
+      "comments": [],
+      "type": "task",
+      "points": null,
+      "estimatedHours": null
     },
     {
       "id": "t13",
@@ -412,7 +474,12 @@
           "text": "Marked done",
           "at": "2026-09-08T03:27:56.558Z"
         }
-      ]
+      ],
+      "tagged": [],
+      "comments": [],
+      "type": "task",
+      "points": null,
+      "estimatedHours": null
     },
     {
       "id": "t14",
@@ -442,7 +509,12 @@
           "text": "Marked done",
           "at": "2026-09-08T03:27:58.234Z"
         }
-      ]
+      ],
+      "tagged": [],
+      "comments": [],
+      "type": "task",
+      "points": null,
+      "estimatedHours": null
     },
     {
       "id": "idcwmetfl4mts6qyb2",
@@ -480,7 +552,12 @@
           "label": "Productivity App Builder",
           "path": "C:\\Users\\ADMiN\\.config\\opencode\\skills\\productivity-app-builder"
         }
-      ]
+      ],
+      "tagged": [],
+      "comments": [],
+      "type": "task",
+      "points": null,
+      "estimatedHours": null
     },
     {
       "id": "id35pfjgsomts6who0",
@@ -530,7 +607,12 @@
           "label": "Local File path",
           "path": "C:\\Abir\\Akij Resources\\Strategic planning Department\\Documents\\Business Analysis\\AEl Analysis\\September Analysis"
         }
-      ]
+      ],
+      "tagged": [],
+      "comments": [],
+      "type": "task",
+      "points": null,
+      "estimatedHours": null
     },
     {
       "id": "idi21tz543mttk8cog",
@@ -566,7 +648,12 @@
           "label": "Result",
           "url": "https://abirulislam-ops.github.io/akij-customer-understanding/"
         }
-      ]
+      ],
+      "tagged": [],
+      "comments": [],
+      "type": "task",
+      "points": null,
+      "estimatedHours": null
     },
     {
       "id": "id1tgj0nsrmttv1z51",
@@ -600,7 +687,12 @@
           "label": "Result",
           "url": "https://abirulislam-ops.github.io/akij-resources-revenue-assurance/"
         }
-      ]
+      ],
+      "tagged": [],
+      "comments": [],
+      "type": "task",
+      "points": null,
+      "estimatedHours": null
     },
     {
       "id": "id6joydl1pmtu1m38j",
@@ -623,7 +715,13 @@
           "text": "Created",
           "at": "2026-09-09T11:56:33.379Z"
         }
-      ]
+      ],
+      "sources": [],
+      "tagged": [],
+      "comments": [],
+      "type": "task",
+      "points": null,
+      "estimatedHours": null
     },
     {
       "id": "idfor7tl3nmtzhllmh",
@@ -652,7 +750,12 @@
           "label": "Local Source file",
           "path": "C:\\Abir\\Akij Resources\\Strategic planning Department\\Documents\\Business Related Documents"
         }
-      ]
+      ],
+      "tagged": [],
+      "comments": [],
+      "type": "task",
+      "points": null,
+      "estimatedHours": null
     }
   ],
   "workLog": [
