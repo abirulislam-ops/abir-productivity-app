@@ -183,6 +183,9 @@
   .badge.open { background: rgba(91,140,255,.16); color: var(--accent); }
   .badge.progress { background: rgba(251,191,36,.16); color: var(--amber); }
   .badge.done { background: rgba(52,211,153,.16); color: var(--green); }
+  .badge.review { background: rgba(167,139,250,.16); color: var(--violet); }
+  .badge.blocked { background: rgba(248,113,113,.16); color: var(--red); }
+  .badge.backlog { background: rgba(148,163,184,.18); color: var(--muted); }
   .badge.auto { background: rgba(34,211,238,.14); color: var(--accent2); }
   .badge.opencode { background: rgba(167,139,250,.16); color: var(--violet); }
   .badge.manual { background: rgba(62,207,158,.14); color: var(--green); }
@@ -699,7 +702,16 @@ function normalize(s) {
   s.settings = Object.assign({}, d.settings, s.settings);
   if (!s.seedIds) s.seedIds = {};
   if (!s.opencodeReview) s.opencodeReview = null;
-  (s.tasks || []).forEach(t => { if (!Array.isArray(t.updates)) t.updates = []; });
+  (s.tasks || []).forEach(t => {
+    if (!Array.isArray(t.updates)) t.updates = [];
+    if (!Array.isArray(t.sources)) t.sources = [];
+    if (!Array.isArray(t.tags)) t.tags = [];
+    if (!Array.isArray(t.tagged)) t.tagged = [];
+    if (!Array.isArray(t.comments)) t.comments = [];
+    if (!t.type) t.type = "task";
+    if (t.points == null) t.points = null;
+    if (t.estimatedHours == null) t.estimatedHours = null;
+  });
   return s;
 }
 function load() {
@@ -712,12 +724,19 @@ function load() {
 function save() {
   localStorage.setItem(LS_KEY, JSON.stringify(state));
   scheduleAutoPush();
+  scheduleAutoBackup();
 }
 let autoPushTimer = null;
 function scheduleAutoPush() {
   if (READ_ONLY || state.settings.autoPushGithub === false) return;
   clearTimeout(autoPushTimer);
   autoPushTimer = setTimeout(() => saveToGitHub(true), 5000);
+}
+let autoBackupTimer = null;
+function scheduleAutoBackup() {
+  if (READ_ONLY || state.settings.backupAuto === false) return;
+  clearTimeout(autoBackupTimer);
+  autoBackupTimer = setTimeout(() => backupNow(true), 10000);
 }
 
 /* ---------- Helpers ---------- */
@@ -893,8 +912,22 @@ function drawHBar(cv, items, colors) {
 /* ============================================================
    TASKS
 ============================================================ */
-const STATUS = { open: "Open", progress: "In progress", done: "Done" };
+const STATUS = { backlog: "Backlog", open: "Open", progress: "In progress", review: "In review", blocked: "Blocked", done: "Done" };
+const STATUS_ORDER = { progress: 0, open: 1, review: 2, blocked: 3, backlog: 4, done: 5 };
 const SRC = { opencode: "opencode", auto: "auto-approved", manual: "manual" };
+const ISSUE_TYPES = {
+  task:  { icon: "🔹", label: "Task" },
+  story: { icon: "📘", label: "Story" },
+  epic:  { icon: "🔷", label: "Epic" },
+  bug:   { icon: "🐞", label: "Bug" },
+};
+const TEAM = [
+  { id: "abir",  name: "Abir",    role: "officer", color: "#5b8cff" },
+  { id: "peer",  name: "Officer 2", role: "officer", color: "#22d3ee" },
+  { id: "mgr1",  name: "Manager 1", role: "manager", color: "#a78bfa" },
+  { id: "mgr2",  name: "Manager 2", role: "manager", color: "#34d399" },
+];
+const TEAM_BY_ID = Object.fromEntries(TEAM.map(m => [m.id, m]));
 let taskFilter = "all";
 let taskGroup = false;
 let tagFilter = null;
@@ -906,7 +939,7 @@ function allTags() {
 }
 
 function renderTasks() {
-  const filters = [["all","All"],["open","Open"],["progress","In progress"],["done","Done"]];
+  const filters = [["all","All"], ...Object.entries(STATUS).map(([k, l]) => [k, l])];
   let html = filters.map(([k, l]) => `<button class="chip ${taskFilter===k?"active":""}" data-f="${k}">${l}</button>`).join("");
   html += `<button class="chip ${taskGroup?"active":""}" data-grp="1">🗂 Group by project</button>`;
   html += `<span class="spacer"></span><span class="small muted">${state.tasks.length} tasks</span>`;
@@ -928,7 +961,7 @@ function renderTasks() {
     const ao = a.order == null ? 1e9 : a.order;
     const bo = b.order == null ? 1e9 : b.order;
     if (ao !== bo) return ao - bo;
-    const o = { progress:0, open:1, done:2 }; return (o[a.status]-o[b.status]);
+    return (STATUS_ORDER[a.status] ?? 99) - (STATUS_ORDER[b.status] ?? 99);
   });
 
   if (!list.length) { $("#taskList").innerHTML = '<div class="empty"><div class="big">✅</div>No tasks in this view.</div>'; return; }
@@ -938,6 +971,11 @@ function renderTasks() {
     const srcBadge = t.source === "auto" ? `<span class="badge auto">⚡ auto-approved</span>` : t.source === "manual" ? `<span class="badge manual">✍️ you</span>` : `<span class="badge opencode">opencode</span>`;
     const priBadge = t.priority ? `<span class="badge ${t.priority}">${t.priority}</span>` : "";
     const tagBadges = (t.tags || []).map(g => `<span class="small muted">#${esc(g)}</span>`).join(" ");
+    const typeInfo = ISSUE_TYPES[t.type] || ISSUE_TYPES.task;
+    const assignee = TEAM_BY_ID[t.assignee];
+    const assigneeChip = assignee ? `<span class="badge" style="background:${assignee.color}22;color:${assignee.color}">👤 ${esc(assignee.name)}</span>` : "";
+    const pointsChip = t.points != null ? `<span class="badge">⚡ ${t.points} pts</span>` : "";
+    const sprintChip = t.sprint ? `<span class="badge">🏁 ${esc(t.sprint)}</span>` : "";
     const srcLinks = (t.sources || []).map((s, i) => {
       const label = esc(s.label || s.url || s.path || "");
       const link = s.url
@@ -961,11 +999,11 @@ function renderTasks() {
     <div class="task-item" data-id="${esc(t.id)}">
       <div class="task-check ${done?"done":""}" data-toggle="${esc(t.id)}" title="${done ? "Re-open task" : "Mark done"}">${done ? "↺" : ""}</div>
       <div class="task-body">
-        <div class="task-title ${done?"done-t":""}">${esc(t.title)}</div>
+        <div class="task-title ${done?"done-t":""}">${typeInfo.icon} ${esc(t.title)}</div>
         ${t.desc ? `<div class="task-desc">${esc(t.desc)}</div>` : ""}
         <div class="task-meta">
           <span class="badge ${t.status}">${STATUS[t.status]||t.status}</span>
-          ${srcBadge} ${priBadge}
+          ${srcBadge} ${priBadge} ${assigneeChip} ${pointsChip} ${sprintChip}
           ${t.project ? `<span class="small muted">${esc(t.project)}</span>` : ""}
           ${t.due ? `<span class="small muted">due ${esc(t.due)}</span>` : ""}
           ${tagBadges}
@@ -1082,7 +1120,7 @@ function moveTask(id, dir) {
     const ao = a.order == null ? 1e9 : a.order;
     const bo = b.order == null ? 1e9 : b.order;
     if (ao !== bo) return ao - bo;
-    const o = { progress:0, open:1, done:2 }; return (o[a.status]-o[b.status]);
+    return (STATUS_ORDER[a.status] ?? 99) - (STATUS_ORDER[b.status] ?? 99);
   });
   list.forEach((x, i) => { x.order = i; });
   const idx = list.findIndex(x => x.id === id);
@@ -1116,17 +1154,31 @@ function openEditTask(taskId) {
   if (!t) return;
   const statusOpts = Object.keys(STATUS).map(k => `<option value="${k}" ${t.status===k?"selected":""}>${STATUS[k]}</option>`).join("");
   const prioOpts = ["low","medium","high"].map(p => `<option value="${p}" ${t.priority===p?"selected":""}>${p}</option>`).join("");
+  const typeOpts = Object.keys(ISSUE_TYPES).map(k => `<option value="${k}" ${t.type===k?"selected":""}>${ISSUE_TYPES[k].icon} ${ISSUE_TYPES[k].label}</option>`).join("");
+  const assigneeOpts = `<option value="">— unassigned —</option>` + TEAM.map(m => `<option value="${m.id}" ${t.assignee===m.id?"selected":""}>${esc(m.name)} (${m.role})</option>`).join("");
+  const pointsOpts = ["", "1", "2", "3", "5", "8"].map(p => `<option value="${p}" ${String(t.points ?? "")===p?"selected":""}>${p === "" ? "—" : p}</option>`).join("");
   $("#modal").innerHTML = `
     <h3>Edit task</h3>
     <div class="field"><label>Title *</label><input id="e-title" value="${esc(t.title)}"></div>
     <div class="field"><label>Description</label><textarea id="e-desc">${esc(t.desc || "")}</textarea></div>
     <div class="row" style="gap:10px">
+      <div class="field" style="flex:1"><label>Type</label><select id="e-type">${typeOpts}</select></div>
+      <div class="field" style="flex:1"><label>Assignee</label><select id="e-assignee">${assigneeOpts}</select></div>
+    </div>
+    <div class="row" style="gap:10px">
       <div class="field" style="flex:1"><label>Status</label><select id="e-status">${statusOpts}</select></div>
       <div class="field" style="flex:1"><label>Priority</label><select id="e-prio">${prioOpts}</select></div>
     </div>
     <div class="row" style="gap:10px">
+      <div class="field" style="flex:1"><label>Story points</label><select id="e-points">${pointsOpts}</select></div>
+      <div class="field" style="flex:1"><label>Estimated hours</label><input id="e-hours" type="number" min="0" step="0.5" value="${esc(t.estimatedHours == null ? "" : t.estimatedHours)}"></div>
+    </div>
+    <div class="row" style="gap:10px">
       <div class="field" style="flex:1"><label>Project</label><input id="e-project" value="${esc(t.project || "")}"></div>
       <div class="field" style="flex:1"><label>Due date</label><input id="e-due" type="date" value="${esc(t.due || "")}"></div>
+    </div>
+    <div class="row" style="gap:10px">
+      <div class="field" style="flex:1"><label>Sprint</label><input id="e-sprint" value="${esc(t.sprint || "")}" placeholder="e.g. Week 38"></div>
     </div>
     <div class="field"><label>Tags (comma-separated)</label><input id="e-tags" value="${esc((t.tags || []).join(", "))}"></div>
     <div class="modal-actions">
@@ -1145,6 +1197,11 @@ function openEditTask(taskId) {
     }
     t.title = title;
     t.desc = $("#e-desc").value.trim();
+    t.type = $("#e-type").value;
+    t.assignee = $("#e-assignee").value || null;
+    t.points = $("#e-points").value === "" ? null : +$("#e-points").value;
+    t.estimatedHours = $("#e-hours").value ? +$("#e-hours").value : null;
+    t.sprint = $("#e-sprint").value.trim() || null;
     t.priority = $("#e-prio").value;
     t.project = $("#e-project").value.trim();
     t.due = $("#e-due").value || null;
@@ -1154,16 +1211,30 @@ function openEditTask(taskId) {
 }
 function openAddTask(preTitle, preDesc) {
   const prioOpts = ["low","medium","high"].map(p => `<option value="${p}" ${p==="medium"?"selected":""}>${p}</option>`).join("");
+  const typeOpts = Object.keys(ISSUE_TYPES).map(k => `<option value="${k}" ${k==="task"?"selected":""}>${ISSUE_TYPES[k].icon} ${ISSUE_TYPES[k].label}</option>`).join("");
+  const assigneeOpts = `<option value="">— unassigned —</option>` + TEAM.map(m => `<option value="${m.id}">${esc(m.name)} (${m.role})</option>`).join("");
+  const pointsOpts = ["", "1", "2", "3", "5", "8"].map(p => `<option value="${p}">${p === "" ? "—" : p}</option>`).join("");
   $("#modal").innerHTML = `
     <h3>New task</h3>
     <div class="notice" style="margin-bottom:12px">Adds instantly — you control it. opencode reviews at day end.</div>
     <div class="field"><label>Title *</label><input id="a-title" value="${esc(preTitle || "")}" placeholder="Task title"></div>
     <div class="field"><label>Description</label><textarea id="a-desc" placeholder="What needs to be done?">${esc(preDesc || "")}</textarea></div>
     <div class="row" style="gap:10px">
+      <div class="field" style="flex:1"><label>Type</label><select id="a-type">${typeOpts}</select></div>
+      <div class="field" style="flex:1"><label>Assignee</label><select id="a-assignee">${assigneeOpts}</select></div>
+    </div>
+    <div class="row" style="gap:10px">
       <div class="field" style="flex:1"><label>Priority</label><select id="a-prio">${prioOpts}</select></div>
       <div class="field" style="flex:1"><label>Due date</label><input id="a-due" type="date"></div>
     </div>
-    <div class="field"><label>Project</label><input id="a-project" placeholder="e.g. Strategic Planning"></div>
+    <div class="row" style="gap:10px">
+      <div class="field" style="flex:1"><label>Story points</label><select id="a-points">${pointsOpts}</select></div>
+      <div class="field" style="flex:1"><label>Estimated hours</label><input id="a-hours" type="number" min="0" step="0.5"></div>
+    </div>
+    <div class="row" style="gap:10px">
+      <div class="field" style="flex:1"><label>Project</label><input id="a-project" placeholder="e.g. Strategic Planning"></div>
+      <div class="field" style="flex:1"><label>Sprint</label><input id="a-sprint" placeholder="e.g. Week 38"></div>
+    </div>
     <div class="field"><label>Tags (comma-separated)</label><input id="a-tags" placeholder="strategy, reporting"></div>
     <div class="modal-actions">
       <button class="btn ghost" id="a-cancel">Cancel</button>
@@ -1178,6 +1249,11 @@ function openAddTask(preTitle, preDesc) {
       id: uid(), title,
       desc: $("#a-desc").value.trim(),
       status: "open", source: "manual",
+      type: $("#a-type").value,
+      assignee: $("#a-assignee").value || null,
+      points: $("#a-points").value === "" ? null : +$("#a-points").value,
+      estimatedHours: $("#a-hours").value ? +$("#a-hours").value : null,
+      sprint: $("#a-sprint").value.trim() || null,
       priority: $("#a-prio").value,
       due: $("#a-due").value || null,
       project: $("#a-project").value.trim(),
@@ -2034,10 +2110,11 @@ function printHTML(title, html) {
   area.innerHTML = '<div class="ph">' + esc(title) + '</div>' + html;
   window.print();
 }
-function backupNow() {
-  downloadText("abir-prod-backup-" + todayStr() + ".json", JSON.stringify(state, null, 2), "application/json");
+function backupNow(silent) {
+  if (READ_ONLY) return;
+  if (!silent) downloadText("abir-prod-backup-" + todayStr() + ".json", JSON.stringify(state, null, 2), "application/json");
   fetch("/api/backup", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(state) })
-    .then(r => r.json()).then(j => { if (j.ok) toast("Backed up locally + synced to Drive ✓"); })
+    .then(r => r.json()).then(j => { if (!silent && j.ok) toast("Backed up locally + synced to Drive ✓"); })
     .catch(() => {});
 }
 async function saveToGitHub(silent) {
@@ -2069,6 +2146,36 @@ function restoreBackup() {
   inp.type = "file"; inp.accept = "application/json";
   inp.onchange = () => { const f = inp.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { try { const s = JSON.parse(r.result); if (!s.tasks) throw 0; state = normalize(s); save(); renderAll(); toast("Backup restored ✓"); } catch (e) { toast("Invalid backup file"); } }; r.readAsText(f); };
   inp.click();
+}
+
+/* ---------- Server health / offline detection & auto-restore ---------- */
+function showOfflineBanner() {
+  if ($("#offlineBanner")) return;
+  const b = document.createElement("div");
+  b.id = "offlineBanner";
+  b.className = "ro-banner";
+  b.style.borderColor = "var(--red)";
+  b.innerHTML = "⚠️ <b>Server not detected</b> — Save to GitHub, sync & backup are off. Run <code>Launch Abir's Productivity App.bat</code> and keep its window open.";
+  const app = $(".app"); if (app) app.prepend(b);
+}
+function hideOfflineBanner() { const b = $("#offlineBanner"); if (b) b.remove(); }
+async function checkServer() {
+  if (READ_ONLY) return;
+  try {
+    const r = await fetch("/api/health", { cache: "no-store" });
+    if (r.ok) { hideOfflineBanner(); return; }
+    throw 0;
+  } catch (e) { showOfflineBanner(); }
+}
+async function restoreFromServerIfEmpty() {
+  if (READ_ONLY) return;
+  try {
+    if (localStorage.getItem(LS_KEY)) return;
+    const r = await fetch("/api/backup/download", { cache: "no-store" });
+    if (!r.ok) return;
+    const s = await r.json();
+    if (s && s.tasks) { state = normalize(s); save(); toast("Restored your data from server backup ✓"); renderAll(); }
+  } catch (e) {}
 }
 
 /* ---------- Dashboard focus widgets ---------- */
@@ -2195,7 +2302,8 @@ window.createNote = createNote;
 applyTheme();
 applyReadOnly();
 renderAll();
-syncFromOpencode();
+restoreFromServerIfEmpty().then(syncFromOpencode);
+checkServer();
 
 /* Installable app (PWA) — register service worker when served over http(s) */
 if ("serviceWorker" in navigator && location.protocol !== "file:") {
