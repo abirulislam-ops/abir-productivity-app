@@ -575,7 +575,7 @@
     <div class="page-title">
       <div>
         <h2>Roadmap</h2>
-        <p>Timeline by sprint and due date. Green = done.</p>
+        <p>Timeline by sprint and due date. Color-coded by status.</p>
       </div>
     </div>
     <div id="roadmap"></div>
@@ -708,6 +708,14 @@ const OPENCODE_URL = "data/opencode.json";
 const REQUESTS_API = "/api/requests";
 const READ_ONLY = window.__READ_ONLY__ === true;
 
+/* Team backend (Cloudflare Workers + D1). When API_BASE is set, the Worker is
+   the source of truth and localStorage becomes an offline cache. Leave empty
+   ("") to run in the original single-user local mode. */
+const API_BASE = window.__API_BASE__ || "";
+const API_ENABLED = API_BASE !== "" && !READ_ONLY;
+let apiVersion = null;   // optimistic-lock version of the last server state we saw
+let lockedMe = null;     // authenticated user (team mode) — locks the identity picker
+
 /* ---------- Embedded opencode snapshot (fallback for file://) ---------- */
 const EMBEDDED_ANALYTICS = window.__ANALYTICS__ || null;
 
@@ -810,8 +818,13 @@ function load() {
 }
 function save() {
   localStorage.setItem(LS_KEY, JSON.stringify(state));
-  scheduleAutoPush();
-  scheduleAutoBackup();
+  if (API_ENABLED) schedulePush();
+  else { scheduleAutoPush(); scheduleAutoBackup(); }
+}
+let pushTimer = null;
+function schedulePush() {
+  clearTimeout(pushTimer);
+  pushTimer = setTimeout(() => pushToServer(true), 2000);
 }
 let autoPushTimer = null;
 function scheduleAutoPush() {
@@ -1001,8 +1014,8 @@ function drawHBar(cv, items, colors) {
 /* ============================================================
    TASKS
 ============================================================ */
-const STATUS = { backlog: "Backlog", open: "Open", progress: "In progress", review: "In review", blocked: "Blocked", done: "Done" };
-const STATUS_ORDER = { progress: 0, open: 1, review: 2, blocked: 3, backlog: 4, done: 5 };
+const STATUS = { open: "Open", progress: "In progress", review: "In review", done: "Done" };
+const STATUS_ORDER = { progress: 0, open: 1, review: 2, done: 3 };
 const SRC = { opencode: "opencode", auto: "auto-approved", manual: "manual" };
 const ISSUE_TYPES = {
   task:  { icon: "🔹", label: "Task" },
@@ -1422,11 +1435,20 @@ function visibleTasks() {
   });
 }
 function renderMePicker() {
+  const sel = $("#meSelect");
+  if (lockedMe && lockedMe.id) {
+    sel.innerHTML = `<option value="${esc(lockedMe.id)}">${esc(lockedMe.name)} (${lockedMe.role})</option>`;
+    sel.disabled = true;
+    sel.title = "Signed in as " + lockedMe.name + " (" + lockedMe.role + ")";
+    return;
+  }
+  sel.disabled = false;
+  sel.removeAttribute("title");
   const opts = [`<option value="">👥 Everyone (Manager view)</option>`]
     .concat(TEAM.map(m => `<option value="${m.id}" ${state.me === m.id ? "selected" : ""}>${esc(m.name)} (${m.role})</option>`))
     .join("");
-  $("#meSelect").innerHTML = opts;
-  $("#meSelect").onchange = () => { state.me = $("#meSelect").value || null; save(); renderAll(); };
+  sel.innerHTML = opts;
+  sel.onchange = () => { state.me = sel.value || null; save(); renderAll(); };
 }
 
 /* ---------- Hierarchy ---------- */
@@ -2111,8 +2133,86 @@ function mergeOpencode(data) {
 function setSync(mode) {
   const el = $("#syncStatus");
   el.classList.remove("ok");
-  $("#syncText").textContent = mode === "ok" ? "opencode synced" : mode === "github" ? "github synced" : mode === "syncing" ? "syncing…" : "local";
-  if (mode === "ok" || mode === "github") el.classList.add("ok");
+  $("#syncText").textContent = mode === "ok" ? "opencode synced" : mode === "github" ? "github synced" : mode === "syncing" ? "syncing…" : mode === "team" ? "team synced" : "local";
+  if (mode === "ok" || mode === "github" || mode === "team") el.classList.add("ok");
+}
+
+/* ---------- Team backend sync ---------- */
+function stripMe() {
+  const s = JSON.parse(JSON.stringify(state));
+  delete s.me;
+  return s;
+}
+// Merge a teammate's (or server's) state into ours, preserving local-only edits.
+function mergeRemote(remote) {
+  if (!remote || typeof remote !== "object") return;
+  const rid = new Set((remote.tasks || []).map(t => t.id));
+  const localOnly = state.tasks.filter(t => !rid.has(t.id));
+  const merged = (remote.tasks || []).map(t => {
+    const ex = state.tasks.find(x => x.id === t.id);
+    if (!ex) return t;
+    if (Array.isArray(t.updates)) for (const u of t.updates) if (!(ex.updates || []).some(x => x.id === u.id)) ex.updates.push(u);
+    if (Array.isArray(t.comments)) for (const c of t.comments) if (!(ex.comments || []).some(x => x.id === c.id)) ex.comments.push(c);
+    return ex;
+  });
+  state.tasks = merged.concat(localOnly);
+  for (const k of ["links", "notes", "workLog", "requests", "habits", "meetings", "focusLog"]) {
+    const r = remote[k] || [];
+    const ids = new Set(r.map(x => x.id));
+    state[k] = r.concat((state[k] || []).filter(x => !ids.has(x.id)));
+  }
+  if (remote.analytics) state.analytics = remote.analytics;
+  if (typeof remote.opencodeReview !== "undefined") state.opencodeReview = remote.opencodeReview;
+  if (remote.settings) state.settings = Object.assign({}, state.settings || {}, remote.settings);
+  if (remote.mits && typeof remote.mits === "object" && !Array.isArray(remote.mits)) state.mits = Object.assign({}, state.mits || {}, remote.mits);
+}
+async function pullFromServer() {
+  if (!API_ENABLED) return;
+  try {
+    const r = await fetch(API_BASE + "/api/state", { credentials: "include", cache: "no-store" });
+    if (r.status === 401 || r.status === 403) { setSync("local"); toast("Signed out of the team app — sign in via Cloudflare Access"); return; }
+    if (!r.ok) return;
+    const j = await r.json();
+    if (j.state && Array.isArray(j.state.tasks)) {
+      const serverEmpty = j.state.tasks.length === 0 && (j.version || 0) === 0;
+      if (serverEmpty && state.tasks.length) { apiVersion = j.version || 0; await pushToServer(false); return; }
+      state = normalize(j.state);
+      apiVersion = j.version;
+      if (j.user && j.user.id) { state.me = j.user.id; lockedMe = j.user; }
+      localStorage.setItem(LS_KEY, JSON.stringify(state));
+      renderAll();
+      setSync("team");
+    }
+  } catch (e) { setSync("local"); }
+}
+async function pushToServer(silent) {
+  if (!API_ENABLED) return;
+  try {
+    const resp = await fetch(API_BASE + "/api/state", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ state: stripMe(), version: apiVersion })
+    });
+    if (resp.status === 401 || resp.status === 403) { setSync("local"); return; }
+    const j = await resp.json();
+    if (resp.status === 409 && j.state) {
+      mergeRemote(j.state);
+      apiVersion = j.version;
+      if (j.user && j.user.id) { state.me = j.user.id; lockedMe = j.user; }
+      localStorage.setItem(LS_KEY, JSON.stringify(state));
+      renderAll();
+      await pushToServer(true); // retry once with the merged state
+      if (!silent) toast("Merged with a teammate's changes");
+    } else if (j.ok) {
+      apiVersion = j.version;
+      setSync("team");
+    } else if (!silent) {
+      toast("Save failed: " + (j.error || "unknown"));
+    }
+  } catch (e) {
+    if (!silent) toast("Offline — changes saved locally, will sync later");
+  }
 }
 
 function importOpencodeFile() {
@@ -2455,6 +2555,7 @@ function backupNow(silent) {
     .catch(() => {});
 }
 async function saveToGitHub(silent) {
+  if (API_ENABLED) { await pushToServer(silent); return; }
   if (READ_ONLY) { if (!silent) toast("Read-only view — nothing to save"); return; }
   const btn = $("#saveGithubBtn");
   const orig = btn ? btn.innerHTML : "";
@@ -2586,7 +2687,7 @@ function applyTheme() {
   const btn = $("#themeBtn");
   if (btn) btn.textContent = light ? "☀️" : "🌙";
   const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.setAttribute("content", light ? "#f6f7fb" : "#0a0c12");
+  if (meta) meta.setAttribute("content", light ? "#f6f8f7" : "#0e1311");
 }
 function toggleTheme() {
   state.settings.theme = currentTheme() === "light" ? "dark" : "light";
@@ -2596,7 +2697,7 @@ function toggleTheme() {
 }
 
 /* ---------- Bindings & init ---------- */
-$("#refreshBtn").onclick = syncFromOpencode;
+$("#refreshBtn").onclick = () => API_ENABLED ? pullFromServer() : syncFromOpencode();
 $("#reqTaskBtn").onclick = () => openAddTask();
 $("#reqTaskBtn2").onclick = () => openAddTask();
 $("#reqListBtn").onclick = renderRequests;
@@ -2637,12 +2738,21 @@ $("#modalBack").addEventListener("click", e => { if (e.target === $("#modalBack"
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
 window.createNote = createNote;
 
-applyTheme();
-applyReadOnly();
-migrateUpdatesToSubtasks();
-renderAll();
-restoreFromServerIfEmpty().then(syncFromOpencode);
-checkServer();
+async function bootstrap() {
+  applyTheme();
+  applyReadOnly();
+  migrateUpdatesToSubtasks();
+  renderAll();
+  if (API_ENABLED) {
+    const btn = $("#saveGithubBtn");
+    if (btn) btn.textContent = "💾 Save";
+    await pullFromServer();
+  } else {
+    restoreFromServerIfEmpty().then(syncFromOpencode);
+    checkServer();
+  }
+}
+bootstrap();
 
 /* Installable app (PWA) — register service worker when served over http(s) */
 if ("serviceWorker" in navigator && location.protocol !== "file:") {
