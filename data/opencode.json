@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-14T03:37:31.002Z",
+  "updatedAt": "2026-09-14T03:38:35.924Z",
   "tasks": [
     {
       "id": "t1",
@@ -501,7 +501,7 @@
       "status": "done",
       "source": "auto",
       "priority": "high",
-      "due": null,
+      "due": "2026-08-25",
       "project": "Strategic Planning",
       "tags": [
         "dashboard",
@@ -527,7 +527,10 @@
       "comments": [],
       "type": "task",
       "points": null,
-      "estimatedHours": null
+      "estimatedHours": null,
+      "assignee": null,
+      "sprint": null,
+      "parentId": null
     },
     {
       "id": "idcwmetfl4mts6qyb2",
