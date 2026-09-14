@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-13T09:10:25.318Z",
+  "updatedAt": "2026-09-14T03:29:57.620Z",
   "tasks": [
     {
       "id": "t1",
@@ -541,6 +541,16 @@
           "id": "idqolyzy90mttsil00",
           "text": "Individual KPI & Team KPI",
           "at": "2026-09-09T07:41:53.232Z"
+        },
+        {
+          "id": "iddqtbchy0mu0opq1b",
+          "text": "Status → In progress",
+          "at": "2026-09-14T03:29:51.119Z"
+        },
+        {
+          "id": "id00na6fcfmu0opr4f",
+          "text": "Status → Open",
+          "at": "2026-09-14T03:29:52.527Z"
         }
       ],
       "sources": [
