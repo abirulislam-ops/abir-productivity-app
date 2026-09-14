@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-14T07:29:40.510Z",
+  "updatedAt": "2026-09-14T07:30:38.079Z",
   "tasks": [
     {
       "id": "t1",
@@ -125,7 +125,7 @@
       "status": "done",
       "source": "auto",
       "priority": "medium",
-      "due": null,
+      "due": "2026-08-20",
       "project": "Tooling",
       "createdAt": "2026-08-18T08:00:00Z",
       "sources": [],
