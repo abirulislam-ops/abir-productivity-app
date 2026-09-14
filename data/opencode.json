@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-14T03:38:35.924Z",
+  "updatedAt": "2026-09-14T03:46:08.880Z",
   "tasks": [
     {
       "id": "t1",
@@ -168,6 +168,11 @@
           "id": "ide4ukdlrymu0owf8a",
           "text": "We need to add:\n1. Marketing Increment/Profit: To Marketing Led Increment/Profit\n2. Need to add branch mark for all SBU\n3. Need to add charts for reaching SBU vs Branch mark",
           "at": "2026-09-14T03:35:03.706Z"
+        },
+        {
+          "id": "id58vvof8hmu0p9kl3",
+          "text": "The form need to be like google sheet for inputting. A employee need to select SBU then they will find their name and enroll, Also build some system such that employee will have campaign name and info suggestions in next month.",
+          "at": "2026-09-14T03:45:17.175Z"
         }
       ],
       "tagged": [],
