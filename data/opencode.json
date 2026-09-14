@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-14T03:35:08.729Z",
+  "updatedAt": "2026-09-14T03:36:15.870Z",
   "tasks": [
     {
       "id": "t1",
@@ -653,6 +653,11 @@
           "id": "id8sast7kfmttk8coh",
           "text": "Created",
           "at": "2026-09-09T03:49:58.961Z"
+        },
+        {
+          "id": "idnel86wfnmu0oxv1c",
+          "text": "Need to add Customer wise questioners like B2B, B2C etc",
+          "at": "2026-09-14T03:36:10.848Z"
         }
       ],
       "sources": [
