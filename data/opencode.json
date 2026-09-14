@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-14T07:29:22.116Z",
+  "updatedAt": "2026-09-14T07:29:40.510Z",
   "tasks": [
     {
       "id": "t1",
@@ -597,7 +597,7 @@
       "type": "task",
       "points": null,
       "estimatedHours": null,
-      "assignee": null,
+      "assignee": "abir",
       "sprint": null,
       "parentId": null,
       "order": 18
@@ -811,7 +811,10 @@
       "type": "task",
       "points": null,
       "estimatedHours": null,
-      "order": 19
+      "order": 19,
+      "assignee": "abir",
+      "sprint": null,
+      "parentId": null
     },
     {
       "id": "id6joydl1pmtu1m38j",
