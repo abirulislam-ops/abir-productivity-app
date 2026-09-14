@@ -690,7 +690,6 @@
 </div>
 <div class="toast" id="toast"></div>
 
-<script>window.__READ_ONLY__=true;</script>
 <script src="data/analytics.js"></script>
 <script>
 "use strict";
@@ -711,10 +710,18 @@ const READ_ONLY = window.__READ_ONLY__ === true;
 /* Team backend (Cloudflare Workers + D1). When API_BASE is set, the Worker is
    the source of truth and localStorage becomes an offline cache. Leave empty
    ("") to run in the original single-user local mode. */
-const API_BASE = window.__API_BASE__ || "";
+const API_BASE = window.__API_BASE__ || "https://spa-team-api.abirul-islam.workers.dev";
+const API_TOKEN = window.__API_TOKEN__ || "EzeVsA-JqZRkqG2J9Qh4cuZ6LiAndMno";
 const API_ENABLED = API_BASE !== "" && !READ_ONLY;
+const TOKEN_AUTH = API_ENABLED && API_TOKEN !== "";
 let apiVersion = null;   // optimistic-lock version of the last server state we saw
 let lockedMe = null;     // authenticated user (team mode) — locks the identity picker
+
+function apiHeaders() {
+  const h = { "Content-Type": "application/json" };
+  if (API_TOKEN) { h["X-Team-Token"] = API_TOKEN; if (state.me) h["X-Team-User"] = state.me; }
+  return h;
+}
 
 /* ---------- Embedded opencode snapshot (fallback for file://) ---------- */
 const EMBEDDED_ANALYTICS = window.__ANALYTICS__ || null;
@@ -1024,10 +1031,10 @@ const ISSUE_TYPES = {
   bug:   { icon: "🐞", label: "Bug" },
 };
 const TEAM = [
-  { id: "abir",  name: "Abir",    role: "officer", color: "#2fbf8f" },
-  { id: "peer",  name: "Officer 2", role: "officer", color: "#35b8a6" },
-  { id: "mgr1",  name: "Manager 1", role: "manager", color: "#e0b45a" },
-  { id: "mgr2",  name: "Manager 2", role: "manager", color: "#8ba09a" },
+  { id: "abir",  name: "Abirul Islam", role: "officer", color: "#2fbf8f" },
+  { id: "peer",  name: "Zobaeer",      role: "officer", color: "#35b8a6" },
+  { id: "mgr1",  name: "Sabbir",       role: "manager", color: "#e0b45a" },
+  { id: "mgr2",  name: "Ahmed Ahnaf",  role: "manager", color: "#8ba09a" },
 ];
 const TEAM_BY_ID = Object.fromEntries(TEAM.map(m => [m.id, m]));
 let taskFilter = "all";
@@ -1444,9 +1451,14 @@ function renderMePicker() {
   }
   sel.disabled = false;
   sel.removeAttribute("title");
-  const opts = [`<option value="">👥 Everyone (Manager view)</option>`]
-    .concat(TEAM.map(m => `<option value="${m.id}" ${state.me === m.id ? "selected" : ""}>${esc(m.name)} (${m.role})</option>`))
-    .join("");
+  let opts;
+  if (TOKEN_AUTH) {
+    opts = TEAM.map(m => `<option value="${m.id}" ${state.me === m.id ? "selected" : ""}>${esc(m.name)} (${m.role})</option>`).join("");
+  } else {
+    opts = [`<option value="">👥 Everyone (Manager view)</option>`]
+      .concat(TEAM.map(m => `<option value="${m.id}" ${state.me === m.id ? "selected" : ""}>${esc(m.name)} (${m.role})</option>`))
+      .join("");
+  }
   sel.innerHTML = opts;
   sel.onchange = () => { state.me = sel.value || null; save(); renderAll(); };
 }
@@ -2169,8 +2181,8 @@ function mergeRemote(remote) {
 async function pullFromServer() {
   if (!API_ENABLED) return;
   try {
-    const r = await fetch(API_BASE + "/api/state", { credentials: "include", cache: "no-store" });
-    if (r.status === 401 || r.status === 403) { setSync("local"); toast("Signed out of the team app — sign in via Cloudflare Access"); return; }
+    const r = await fetch(API_BASE + "/api/state", { headers: apiHeaders(), credentials: "include", cache: "no-store" });
+    if (r.status === 401 || r.status === 403) { setSync("local"); toast("Access denied — check your team identity"); return; }
     if (!r.ok) return;
     const j = await r.json();
     if (j.state && Array.isArray(j.state.tasks)) {
@@ -2178,7 +2190,7 @@ async function pullFromServer() {
       if (serverEmpty && state.tasks.length) { apiVersion = j.version || 0; await pushToServer(false); return; }
       state = normalize(j.state);
       apiVersion = j.version;
-      if (j.user && j.user.id) { state.me = j.user.id; lockedMe = j.user; }
+      if (j.user && j.user.id) { state.me = j.user.id; if (!TOKEN_AUTH) lockedMe = j.user; }
       localStorage.setItem(LS_KEY, JSON.stringify(state));
       renderAll();
       setSync("team");
@@ -2190,7 +2202,7 @@ async function pushToServer(silent) {
   try {
     const resp = await fetch(API_BASE + "/api/state", {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: apiHeaders(),
       credentials: "include",
       body: JSON.stringify({ state: stripMe(), version: apiVersion })
     });
@@ -2199,7 +2211,7 @@ async function pushToServer(silent) {
     if (resp.status === 409 && j.state) {
       mergeRemote(j.state);
       apiVersion = j.version;
-      if (j.user && j.user.id) { state.me = j.user.id; lockedMe = j.user; }
+      if (j.user && j.user.id) { state.me = j.user.id; if (!TOKEN_AUTH) lockedMe = j.user; }
       localStorage.setItem(LS_KEY, JSON.stringify(state));
       renderAll();
       await pushToServer(true); // retry once with the merged state
@@ -2742,6 +2754,7 @@ async function bootstrap() {
   applyTheme();
   applyReadOnly();
   migrateUpdatesToSubtasks();
+  if (TOKEN_AUTH && !state.me) state.me = "abir";
   renderAll();
   if (API_ENABLED) {
     const btn = $("#saveGithubBtn");
