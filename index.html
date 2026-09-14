@@ -1090,7 +1090,8 @@ function renderTasks() {
       <button class="btn ghost small" data-subtask="${esc(t.id)}">⊞ Subtask</button>
       <button class="btn ghost small" data-update="${esc(t.id)}">+ Update</button>
       <button class="btn ghost small" data-comment="${esc(t.id)}">💬</button>
-      <button class="btn ghost small" data-ask="${esc(t.id)}">Ask opencode</button>`;
+      <button class="btn ghost small" data-ask="${esc(t.id)}">Ask opencode</button>
+      <button class="btn danger small" data-del="${esc(t.id)}" title="Delete task">🗑</button>`;
     return `
     <div class="task-item" data-id="${esc(t.id)}">
       <div class="task-check ${done?"done":""}" data-toggle="${esc(t.id)}" title="${done ? "Re-open task" : "Mark done"}">${done ? "↺" : ""}</div>
@@ -1138,6 +1139,7 @@ function renderTasks() {
   $$("#taskList [data-update]").forEach(el => el.onclick = () => openAddUpdate(el.dataset.update));
   $$("#taskList [data-comment]").forEach(el => el.onclick = () => openComments(el.dataset.comment));
   $$("#taskList [data-ask]").forEach(el => el.onclick = () => openRequest("change", el.dataset.ask));
+  $$("#taskList [data-del]").forEach(el => el.onclick = () => deleteTask(el.dataset.del));
   $$("#taskList [data-add-src]").forEach(el => el.onclick = () => openSourceForm(el.dataset.addSrc));
   $$("#taskList [data-edit-src]").forEach(el => el.onclick = () => openSourceForm(el.dataset.editSrc, +el.dataset.srcI));
   $$("#taskList [data-rem-src]").forEach(el => el.onclick = () => { removeSource(el.dataset.remSrc, +el.dataset.srcI); });
@@ -1229,6 +1231,19 @@ function moveTask(id, dir) {
   if (idx < 0 || j < 0 || j >= list.length) return;
   const tmp = list[idx].order; list[idx].order = list[j].order; list[j].order = tmp;
   save(); renderTasks();
+}
+function deleteTask(id) {
+  const t = state.tasks.find(x => x.id === id);
+  if (!t) return;
+  const ids = new Set([id]);
+  const collect = tid => childrenOf(tid).forEach(k => { ids.add(k.id); collect(k.id); });
+  collect(id);
+  const count = ids.size;
+  const msg = count > 1 ? `Delete "${t.title}" and its ${count - 1} subtask(s)?` : `Delete "${t.title}"?`;
+  if (!confirm(msg)) return;
+  state.tasks = state.tasks.filter(x => !ids.has(x.id));
+  save(); renderTasks(); renderBoard(); renderRoadmap();
+  toast(count > 1 ? `Deleted task + ${count - 1} subtask(s)` : "Task deleted");
 }
 function openAddUpdate(taskId) {
   const t = state.tasks.find(x => x.id === taskId);
