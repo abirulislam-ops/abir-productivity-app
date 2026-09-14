@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-14T03:29:57.620Z",
+  "updatedAt": "2026-09-14T03:30:54.360Z",
   "tasks": [
     {
       "id": "t1",
@@ -120,7 +120,7 @@
       "id": "t5",
       "title": "ARL ROMI Analysis Automation",
       "desc": "Auto-logged from work sessions.",
-      "status": "done",
+      "status": "open",
       "source": "auto",
       "priority": "high",
       "due": null,
@@ -155,6 +155,11 @@
           "id": "idrcwep2g1mttsauo6",
           "text": "Re-opened (re-continued)",
           "at": "2026-09-09T07:35:52.518Z"
+        },
+        {
+          "id": "idb3lqdgijmu0oqyym",
+          "text": "Re-opened (re-continued)",
+          "at": "2026-09-14T03:30:49.342Z"
         }
       ],
       "tagged": [],
