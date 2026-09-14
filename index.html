@@ -1087,6 +1087,7 @@ function renderTasks() {
       <button class="btn ghost small" data-move="${esc(t.id)}" data-dir="-1" title="Move up">↑</button>
       <button class="btn ghost small" data-move="${esc(t.id)}" data-dir="1" title="Move down">↓</button>
       <button class="btn ghost small" data-edit="${esc(t.id)}">Edit</button>
+      <button class="btn ghost small" data-subtask="${esc(t.id)}">⊞ Subtask</button>
       <button class="btn ghost small" data-update="${esc(t.id)}">+ Update</button>
       <button class="btn ghost small" data-comment="${esc(t.id)}">💬</button>
       <button class="btn ghost small" data-ask="${esc(t.id)}">Ask opencode</button>`;
@@ -1133,6 +1134,7 @@ function renderTasks() {
   $$("#taskList [data-toggle]").forEach(el => el.onclick = () => toggleTaskStatus(el.dataset.toggle));
   $$("#taskList [data-move]").forEach(el => el.onclick = () => moveTask(el.dataset.move, +el.dataset.dir));
   $$("#taskList [data-edit]").forEach(el => el.onclick = () => openEditTask(el.dataset.edit));
+  $$("#taskList [data-subtask]").forEach(el => el.onclick = () => openAddTask("", "", el.dataset.subtask));
   $$("#taskList [data-update]").forEach(el => el.onclick = () => openAddUpdate(el.dataset.update));
   $$("#taskList [data-comment]").forEach(el => el.onclick = () => openComments(el.dataset.comment));
   $$("#taskList [data-ask]").forEach(el => el.onclick = () => openRequest("change", el.dataset.ask));
@@ -1235,6 +1237,7 @@ function openAddUpdate(taskId) {
     <h3>Add update</h3>
     <div class="notice" style="margin-bottom:12px">Task: <b>${esc(t.title)}</b></div>
     <div class="field"><label>Progress note / update</label><textarea id="u-text" placeholder="What did you do? What's next?"></textarea></div>
+    <div class="field"><label style="display:flex;align-items:center;gap:8px;font-weight:600"><input type="checkbox" id="u-subtask" style="width:auto"> Also add this as a subtask</label></div>
     <div class="modal-actions">
       <button class="btn ghost" id="u-cancel">Cancel</button>
       <button class="btn" id="u-save">Save update</button>
@@ -1245,7 +1248,18 @@ function openAddUpdate(taskId) {
     const text = $("#u-text").value.trim();
     if (!text) { toast("Write something first"); return; }
     addUpdate(taskId, text);
-    save(); closeModal(); renderTasks(); toast("Update added ✓");
+    if ($("#u-subtask").checked) {
+      state.tasks.push({
+        id: uid(), title: text, desc: "", status: "open", source: "manual",
+        type: "task", assignee: null, points: null, estimatedHours: null,
+        sprint: null, parentId: taskId, priority: "medium", due: null,
+        project: t.project, tags: [], createdAt: new Date().toISOString(), updates: []
+      });
+      toast("Update added — and created as a subtask ✓");
+    } else {
+      toast("Update added ✓");
+    }
+    save(); closeModal(); renderTasks(); renderBoard(); renderRoadmap();
   };
 }
 function openEditTask(taskId) {
@@ -1311,16 +1325,17 @@ function openEditTask(taskId) {
     save(); closeModal(); renderTasks(); renderBoard(); renderRoadmap(); toast("Task updated ✓");
   };
 }
-function openAddTask(preTitle, preDesc) {
+function openAddTask(preTitle, preDesc, preParent) {
+  const parent = preParent ? state.tasks.find(x => x.id === preParent) : null;
   const prioOpts = ["low","medium","high"].map(p => `<option value="${p}" ${p==="medium"?"selected":""}>${p}</option>`).join("");
   const typeOpts = Object.keys(ISSUE_TYPES).map(k => `<option value="${k}" ${k==="task"?"selected":""}>${ISSUE_TYPES[k].icon} ${ISSUE_TYPES[k].label}</option>`).join("");
   const assigneeOpts = `<option value="">— unassigned —</option>` + TEAM.map(m => `<option value="${m.id}">${esc(m.name)} (${m.role})</option>`).join("");
   const pointsOpts = ["", "1", "2", "3", "5", "8"].map(p => `<option value="${p}">${p === "" ? "—" : p}</option>`).join("");
-  const parentOpts = `<option value="">— none (top level) —</option>` + state.tasks.map(x => `<option value="${x.id}">${esc(x.title)}</option>`).join("");
+  const parentOpts = `<option value="">— none (top level) —</option>` + state.tasks.map(x => `<option value="${x.id}" ${preParent===x.id?"selected":""}>${esc(x.title)}</option>`).join("");
   $("#modal").innerHTML = `
-    <h3>New task</h3>
-    <div class="notice" style="margin-bottom:12px">Adds instantly — you control it. opencode reviews at day end.</div>
-    <div class="field"><label>Title *</label><input id="a-title" value="${esc(preTitle || "")}" placeholder="Task title"></div>
+    <h3>${parent ? "New subtask" : "New task"}</h3>
+    <div class="notice" style="margin-bottom:12px">${parent ? `Will be added under: <b>${esc(parent.title)}</b>` : "Adds instantly — you control it. opencode reviews at day end."}</div>
+    <div class="field"><label>Title *</label><input id="a-title" value="${esc(preTitle || "")}" placeholder="${parent ? "Subtask title" : "Task title"}"></div>
     <div class="field"><label>Description</label><textarea id="a-desc" placeholder="What needs to be done?">${esc(preDesc || "")}</textarea></div>
     <div class="row" style="gap:10px">
       <div class="field" style="flex:1"><label>Type</label><select id="a-type">${typeOpts}</select></div>
@@ -1344,7 +1359,7 @@ function openAddTask(preTitle, preDesc) {
     <div class="field"><label>Tags (comma-separated)</label><input id="a-tags" placeholder="strategy, reporting"></div>
     <div class="modal-actions">
       <button class="btn ghost" id="a-cancel">Cancel</button>
-      <button class="btn" id="a-save">Add task</button>
+      <button class="btn" id="a-save">${parent ? "Add subtask" : "Add task"}</button>
     </div>`;
   openModal();
   $("#a-cancel").onclick = closeModal;
@@ -1369,8 +1384,8 @@ function openAddTask(preTitle, preDesc) {
       updates: []
     };
     state.tasks.push(t);
-    addUpdate(t.id, "Created");
-    save(); closeModal(); renderTasks(); renderBoard(); renderRoadmap(); toast("Task added ✓");
+    addUpdate(t.id, parent ? ("Created as subtask of " + (parent.title || "")) : "Created");
+    save(); closeModal(); renderTasks(); renderBoard(); renderRoadmap(); toast(parent ? "Subtask added ✓" : "Task added ✓");
   };
 }
 
