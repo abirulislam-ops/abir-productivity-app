@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-14T03:36:15.870Z",
+  "updatedAt": "2026-09-14T03:37:31.002Z",
   "tasks": [
     {
       "id": "t1",
@@ -27,8 +27,11 @@
       "tagged": [],
       "comments": [],
       "type": "task",
-      "points": null,
-      "estimatedHours": null
+      "points": 1,
+      "estimatedHours": null,
+      "assignee": "abir",
+      "sprint": null,
+      "parentId": "idcwmetfl4mts6qyb2"
     },
     {
       "id": "t2",
