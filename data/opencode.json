@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-14T07:31:13.440Z",
+  "updatedAt": "2026-09-14T07:32:09.991Z",
   "tasks": [
     {
       "id": "t1",
@@ -223,7 +223,7 @@
       "status": "done",
       "source": "opencode",
       "priority": "high",
-      "due": null,
+      "due": "2026-09-01",
       "project": "Central Marketing & Business Development Policy",
       "tags": [
         "marketing",
