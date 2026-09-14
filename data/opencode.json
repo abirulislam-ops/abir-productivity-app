@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-14T07:26:56.256Z",
+  "updatedAt": "2026-09-14T07:27:04.092Z",
   "tasks": [
     {
       "id": "t1",
@@ -846,7 +846,10 @@
       "type": "task",
       "points": null,
       "estimatedHours": null,
-      "order": 5
+      "order": 5,
+      "assignee": "abir",
+      "sprint": null,
+      "parentId": null
     }
   ],
   "workLog": [
