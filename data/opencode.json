@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-14T06:02:41.354Z",
+  "updatedAt": "2026-09-14T06:08:04.885Z",
   "tasks": [
     {
       "id": "t1",
@@ -52,6 +52,10 @@
         {
           "label": "Previous Flash Report",
           "url": "https://ahmedahnaf-arl.github.io/arl-flash-report-live/"
+        },
+        {
+          "label": "Output Link",
+          "url": "https://arl-flash-report.pages.dev/"
         }
       ],
       "updates": [
