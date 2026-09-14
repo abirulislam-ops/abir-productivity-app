@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-14T07:27:14.859Z",
+  "updatedAt": "2026-09-14T07:27:38.577Z",
   "tasks": [
     {
       "id": "t1",
@@ -113,7 +113,10 @@
       "type": "task",
       "points": null,
       "estimatedHours": null,
-      "order": 8
+      "order": 8,
+      "assignee": "abir",
+      "sprint": null,
+      "parentId": null
     },
     {
       "id": "t4",
@@ -133,7 +136,10 @@
       "type": "task",
       "points": null,
       "estimatedHours": null,
-      "order": 9
+      "order": 9,
+      "assignee": "abir",
+      "sprint": null,
+      "parentId": null
     },
     {
       "id": "t5",
@@ -268,7 +274,10 @@
       "type": "task",
       "points": null,
       "estimatedHours": null,
-      "order": 10
+      "order": 10,
+      "assignee": "abir",
+      "sprint": null,
+      "parentId": null
     },
     {
       "id": "t7",
@@ -329,7 +338,10 @@
       "type": "task",
       "points": null,
       "estimatedHours": null,
-      "order": 11
+      "order": 11,
+      "assignee": "abir",
+      "sprint": null,
+      "parentId": null
     },
     {
       "id": "t8",
@@ -367,7 +379,10 @@
       "type": "task",
       "points": null,
       "estimatedHours": null,
-      "order": 12
+      "order": 12,
+      "assignee": "abir",
+      "sprint": null,
+      "parentId": null
     },
     {
       "id": "t9",
