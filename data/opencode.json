@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-14T06:09:29.071Z",
+  "updatedAt": "2026-09-14T06:50:08.323Z",
   "tasks": [
     {
       "id": "t1",
@@ -136,7 +136,7 @@
       "id": "t5",
       "title": "ARL ROMI Analysis Automation",
       "desc": "Auto-logged from work sessions.",
-      "status": "open",
+      "status": "done",
       "source": "auto",
       "priority": "high",
       "due": null,
@@ -190,6 +190,11 @@
           "id": "id58vvof8hmu0p9kl3",
           "text": "The form need to be like google sheet for inputting. A employee need to select SBU then they will find their name and enroll, Also build some system such that employee will have campaign name and info suggestions in next month.",
           "at": "2026-09-14T03:45:17.175Z"
+        },
+        {
+          "id": "id560bjttgmu0vv6or",
+          "text": "Marked done",
+          "at": "2026-09-14T06:50:03.291Z"
         }
       ],
       "tagged": [],
