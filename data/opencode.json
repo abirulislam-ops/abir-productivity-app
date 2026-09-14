@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-14T07:29:11.247Z",
+  "updatedAt": "2026-09-14T07:29:22.116Z",
   "tasks": [
     {
       "id": "t1",
@@ -519,7 +519,7 @@
       "status": "done",
       "source": "auto",
       "priority": "high",
-      "due": null,
+      "due": "2026-08-26",
       "project": "Marketing",
       "tags": [
         "campaign",
@@ -558,7 +558,10 @@
       "type": "task",
       "points": null,
       "estimatedHours": null,
-      "order": 17
+      "order": 17,
+      "assignee": "abir",
+      "sprint": null,
+      "parentId": null
     },
     {
       "id": "t14",
