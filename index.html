@@ -1429,6 +1429,29 @@ function progressBar(p) {
     <span class="sp-label">${p.done}/${p.total} · ${p.pct}%</span>
   </div>`;
 }
+function isSystemUpdateText(t) {
+  const s = (t || "").trim();
+  return /^Created$/.test(s) || /^Marked done$/.test(s) || /^Re-opened/.test(s) || /^Status\s/.test(s) || /^Created as subtask/.test(s);
+}
+function migrateUpdatesToSubtasks() {
+  if (READ_ONLY || state.migratedUpdatesToSubtasks) return;
+  let added = 0;
+  for (const t of state.tasks) {
+    const ups = (t.updates || []).filter(u => u.text && !isSystemUpdateText(u.text));
+    for (const u of ups) {
+      state.tasks.push({
+        id: uid(), title: u.text.trim(), desc: "",
+        status: t.status === "done" ? "done" : "open", source: "manual",
+        type: "task", assignee: null, points: null, estimatedHours: null,
+        sprint: null, parentId: t.id, priority: "medium", due: null,
+        project: t.project, tags: [], createdAt: u.at || new Date().toISOString(), updates: []
+      });
+      added++;
+    }
+  }
+  state.migratedUpdatesToSubtasks = true;
+  if (added) { save(); toast("Converted " + added + " past updates into subtasks ✓"); }
+}
 
 /* ---------- Board (Kanban) ---------- */
 let boardSprint = "all";
@@ -2601,6 +2624,7 @@ window.createNote = createNote;
 
 applyTheme();
 applyReadOnly();
+migrateUpdatesToSubtasks();
 renderAll();
 restoreFromServerIfEmpty().then(syncFromOpencode);
 checkServer();
