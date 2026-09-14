@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-14T07:28:58.186Z",
+  "updatedAt": "2026-09-14T07:29:11.247Z",
   "tasks": [
     {
       "id": "t1",
@@ -492,7 +492,7 @@
       "status": "done",
       "source": "auto",
       "priority": "medium",
-      "due": null,
+      "due": "2026-08-25",
       "project": "Tooling",
       "tags": [
         "agent",
@@ -507,7 +507,10 @@
       "type": "task",
       "points": null,
       "estimatedHours": null,
-      "order": 16
+      "order": 16,
+      "assignee": "abir",
+      "sprint": null,
+      "parentId": null
     },
     {
       "id": "t13",
