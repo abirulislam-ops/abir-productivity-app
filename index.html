@@ -431,9 +431,14 @@
   .roadmap-group > h3 { font-size: 14px; margin: 0 0 10px; }
   .roadmap-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); }
   .roadmap-row .r-title { flex: 0 0 220px; font-size: 13px; }
+  .roadmap-row .r-title .r-meta { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
   .roadmap-track { flex: 1; position: relative; height: 26px; background: var(--bg2); border-radius: 7px; overflow: hidden; }
-  .roadmap-bar { position: absolute; top: 5px; height: 16px; border-radius: 6px; background: linear-gradient(90deg, var(--accent), var(--accent-hover)); color: #fff; font-size: 11px; line-height: 16px; padding: 0 8px; white-space: nowrap; overflow: hidden; }
-  .roadmap-bar.done { background: linear-gradient(90deg, var(--green), #4ee3b3); }
+  .roadmap-bar { position: absolute; top: 4px; height: 18px; border-radius: 6px; background: var(--accent-soft); border: 1px solid var(--accent-soft-2); color: var(--accent); font-size: 11px; font-weight: 600; line-height: 16px; padding: 0 8px; white-space: nowrap; overflow: hidden; }
+  .roadmap-bar.st-progress { background: rgba(251,191,36,.16); border-color: rgba(251,191,36,.42); color: var(--amber); }
+  .roadmap-bar.st-review { background: var(--accent-soft); border-color: var(--accent-soft-2); color: var(--accent2); }
+  .roadmap-bar.st-done { background: rgba(52,211,153,.16); border-color: rgba(52,211,153,.42); color: var(--green); }
+  .roadmap-bar.st-blocked { background: rgba(248,113,113,.16); border-color: rgba(248,113,113,.42); color: var(--red); }
+  .roadmap-bar.st-backlog { background: rgba(148,163,184,.18); border-color: rgba(148,163,184,.42); color: var(--muted); }
   .roadmap-bar .lbl { opacity: .95; }
 
   /* --- Comments --- */
@@ -1454,7 +1459,7 @@ function moveToStatus(id, status) {
   if (!t || t.status === status) return;
   t.status = status;
   addUpdate(id, "Status → " + (STATUS[status] || status));
-  save(); renderBoard(); renderTasks();
+  save(); renderBoard(); renderTasks(); renderRoadmap();
   toast("Moved to " + (STATUS[status] || status));
 }
 
@@ -1469,6 +1474,15 @@ function renderRoadmap() {
   if (noSprint.length) html.push(`<div class="roadmap-group"><h3>📌 No sprint</h3>${roadmapRows(noSprint)}</div>`);
   $("#roadmap").innerHTML = html.join("") || `<div class="empty"><div class="big">🗺</div>No tasks yet. Add tasks with a sprint or due date to see a timeline.</div>`;
 }
+function roadmapMeta(t) {
+  const assignee = TEAM_BY_ID[t.assignee];
+  const bits = [
+    assignee ? `👤 ${esc(assignee.name)}` : "",
+    t.points != null ? `⚡${t.points} pts` : "",
+    STATUS[t.status] || t.status
+  ].filter(Boolean).join(" · ");
+  return bits ? `<div class="r-meta">${bits}</div>` : "";
+}
 function roadmapRows(ts) {
   const withDue = ts.filter(t => t.due);
   const noDue = ts.filter(t => !t.due);
@@ -1479,10 +1493,9 @@ function roadmapRows(ts) {
   const rows = withDue.map(t => {
     const off = Math.min(94, Math.max(0, (new Date(t.due) - new Date(min)) / 86400000) / span * 100);
     const w = Math.max(7, 90 / span);
-    const done = t.status === "done";
-    return `<div class="roadmap-row"><div class="r-title" title="${esc(t.title)}">${esc(t.title)}</div><div class="roadmap-track"><div class="roadmap-bar ${done ? "done" : ""}" style="left:${off}%;width:${w}%"><span class="lbl">${esc(t.due)}</span></div></div></div>`;
+    return `<div class="roadmap-row"><div class="r-title" title="${esc(t.title)}">${esc(t.title)}${roadmapMeta(t)}</div><div class="roadmap-track"><div class="roadmap-bar st-${esc(t.status)}" style="left:${off}%;width:${w}%"><span class="lbl">${esc(t.due)}</span></div></div></div>`;
   });
-  const noduerows = noDue.map(t => `<div class="roadmap-row"><div class="r-title">${esc(t.title)}</div><div class="small muted">— no due date</div></div>`);
+  const noduerows = noDue.map(t => `<div class="roadmap-row"><div class="r-title">${esc(t.title)}${roadmapMeta(t)}</div><div class="small muted">— no due date</div></div>`);
   return rows.join("") + noduerows.join("");
 }
 
