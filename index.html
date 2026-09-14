@@ -1425,7 +1425,7 @@ function renderBoard() {
   $("#boardSprintBar").innerHTML = bar;
   $$("#boardSprintBar [data-bs]").forEach(c => c.onclick = () => { boardSprint = c.dataset.bs; renderBoard(); });
 
-  const order = ["backlog", "open", "progress", "review", "blocked", "done"];
+  const order = ["open", "progress", "review", "done"];
   const list = visibleTasks().filter(t => boardSprint === "all" || t.sprint === boardSprint);
   $("#board").innerHTML = order.map(st => {
     const items = list.filter(t => t.status === st);
