@@ -429,6 +429,11 @@
   .sub-progress .sp-track { flex: 1; max-width: 130px; height: 6px; background: var(--bg2); border-radius: 4px; overflow: hidden; }
   .sub-progress .sp-fill { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--green)); border-radius: 4px; transition: width .2s; }
   .sub-progress .sp-label { font-size: 11px; color: var(--muted); font-weight: 600; white-space: nowrap; }
+  .steps-block { display: flex; flex-direction: column; gap: 3px; margin-top: 7px; padding: 8px 10px; background: var(--bg2); border: 1px solid var(--border2); border-radius: 10px; }
+  .step { display: flex; align-items: flex-start; gap: 8px; font-size: 12.5px; color: var(--text); cursor: pointer; line-height: 1.35; }
+  .step input { margin-top: 3px; accent-color: var(--accent); flex-shrink: 0; cursor: pointer; }
+  .step.done span { text-decoration: line-through; color: var(--muted); }
+  .step-count { font-size: 11px; color: var(--muted); font-weight: 700; }
 
   /* --- Roadmap / timeline --- */
   .roadmap-group { margin-bottom: 20px; }
@@ -810,6 +815,7 @@ function normalize(s) {
     if (!Array.isArray(t.tags)) t.tags = [];
     if (!Array.isArray(t.tagged)) t.tagged = [];
     if (!Array.isArray(t.comments)) t.comments = [];
+    if (!Array.isArray(t.steps)) t.steps = [];
     if (!t.type) t.type = "task";
     if (t.points == null) t.points = null;
     if (t.estimatedHours == null) t.estimatedHours = null;
@@ -1085,9 +1091,7 @@ function renderTasks() {
     const assigneeChip = assignee ? `<span class="badge" style="background:${assignee.color}22;color:${assignee.color}">👤 ${esc(assignee.name)}</span>` : "";
     const pointsChip = t.points != null ? `<span class="badge">⚡ ${t.points} pts</span>` : "";
     const sprintChip = t.sprint ? `<span class="badge">🏁 ${esc(t.sprint)}</span>` : "";
-    const parent = parentOf(t);
-    const parentChip = parent ? `<span class="small muted">↳ under ${esc(parent.title)}</span>` : "";
-    const prog = subtaskProgress(t.id);
+    const prog = stepProgress(t);
     const progBar = prog ? progressBar(prog) : "";
     const commentChip = (t.comments || []).length ? `<span class="small muted">· 💬 ${t.comments.length}</span>` : "";
     const srcLinks = (t.sources || []).map((s, i) => {
@@ -1107,7 +1111,7 @@ function renderTasks() {
       <button class="btn ghost small" data-move="${esc(t.id)}" data-dir="-1" title="Move up">↑</button>
       <button class="btn ghost small" data-move="${esc(t.id)}" data-dir="1" title="Move down">↓</button>
       <button class="btn ghost small" data-edit="${esc(t.id)}">Edit</button>
-      <button class="btn ghost small" data-subtask="${esc(t.id)}">⊞ Subtask</button>
+      <button class="btn ghost small" data-step-add="${esc(t.id)}">⊞ Step</button>
       <button class="btn ghost small" data-update="${esc(t.id)}">+ Update</button>
       <button class="btn ghost small" data-comment="${esc(t.id)}">💬</button>
       <button class="btn ghost small" data-ask="${esc(t.id)}">Ask opencode</button>
@@ -1123,12 +1127,12 @@ function renderTasks() {
           ${srcBadge} ${priBadge} ${assigneeChip} ${pointsChip} ${sprintChip}
           ${t.project ? `<span class="small muted">${esc(t.project)}</span>` : ""}
           ${t.due ? `<span class="small muted">due ${esc(t.due)}</span>` : ""}
-          ${parentChip}
           ${tagBadges}
           ${commentChip}
           ${ups.length ? `<span class="small muted">· ${ups.length} update${ups.length>1?"s":""}</span>` : ""}
         </div>
         ${progBar}
+        ${stepsBlock(t)}
         ${reviewBlock}
         ${upsBlock}
         ${srcBlock}
@@ -1155,7 +1159,8 @@ function renderTasks() {
   $$("#taskList [data-toggle]").forEach(el => el.onclick = () => toggleTaskStatus(el.dataset.toggle));
   $$("#taskList [data-move]").forEach(el => el.onclick = () => moveTask(el.dataset.move, +el.dataset.dir));
   $$("#taskList [data-edit]").forEach(el => el.onclick = () => openEditTask(el.dataset.edit));
-  $$("#taskList [data-subtask]").forEach(el => el.onclick = () => openAddTask("", "", el.dataset.subtask));
+  $$("#taskList [data-step-add]").forEach(el => el.onclick = () => openAddStep(el.dataset.stepAdd));
+  $$("#taskList [data-step]").forEach(el => el.onchange = () => toggleStep(el.dataset.step, el.dataset.stepId));
   $$("#taskList [data-update]").forEach(el => el.onclick = () => openAddUpdate(el.dataset.update));
   $$("#taskList [data-comment]").forEach(el => el.onclick = () => openComments(el.dataset.comment));
   $$("#taskList [data-ask]").forEach(el => el.onclick = () => openRequest("change", el.dataset.ask));
@@ -1255,15 +1260,10 @@ function moveTask(id, dir) {
 function deleteTask(id) {
   const t = state.tasks.find(x => x.id === id);
   if (!t) return;
-  const ids = new Set([id]);
-  const collect = tid => childrenOf(tid).forEach(k => { ids.add(k.id); collect(k.id); });
-  collect(id);
-  const count = ids.size;
-  const msg = count > 1 ? `Delete "${t.title}" and its ${count - 1} subtask(s)?` : `Delete "${t.title}"?`;
-  if (!confirm(msg)) return;
-  state.tasks = state.tasks.filter(x => !ids.has(x.id));
+  if (!confirm(`Delete "${t.title}"?`)) return;
+  state.tasks = state.tasks.filter(x => x.id !== id);
   save(); renderTasks(); renderBoard(); renderRoadmap();
-  toast(count > 1 ? `Deleted task + ${count - 1} subtask(s)` : "Task deleted");
+  toast("Task deleted");
 }
 function openAddUpdate(taskId) {
   const t = state.tasks.find(x => x.id === taskId);
@@ -1272,7 +1272,6 @@ function openAddUpdate(taskId) {
     <h3>Add update</h3>
     <div class="notice" style="margin-bottom:12px">Task: <b>${esc(t.title)}</b></div>
     <div class="field"><label>Progress note / update</label><textarea id="u-text" placeholder="What did you do? What's next?"></textarea></div>
-    <div class="field"><label style="display:flex;align-items:center;gap:8px;font-weight:600"><input type="checkbox" id="u-subtask" style="width:auto"> Also add this as a subtask</label></div>
     <div class="modal-actions">
       <button class="btn ghost" id="u-cancel">Cancel</button>
       <button class="btn" id="u-save">Save update</button>
@@ -1283,17 +1282,7 @@ function openAddUpdate(taskId) {
     const text = $("#u-text").value.trim();
     if (!text) { toast("Write something first"); return; }
     addUpdate(taskId, text);
-    if ($("#u-subtask").checked) {
-      state.tasks.push({
-        id: uid(), title: text, desc: "", status: "open", source: "manual",
-        type: "task", assignee: null, points: null, estimatedHours: null,
-        sprint: null, parentId: taskId, priority: "medium", due: null,
-        project: t.project, tags: [], createdAt: new Date().toISOString(), updates: []
-      });
-      toast("Update added — and created as a subtask ✓");
-    } else {
-      toast("Update added ✓");
-    }
+    toast("Update added ✓");
     save(); closeModal(); renderTasks(); renderBoard(); renderRoadmap();
   };
 }
@@ -1305,7 +1294,6 @@ function openEditTask(taskId) {
   const typeOpts = Object.keys(ISSUE_TYPES).map(k => `<option value="${k}" ${t.type===k?"selected":""}>${ISSUE_TYPES[k].icon} ${ISSUE_TYPES[k].label}</option>`).join("");
   const assigneeOpts = `<option value="">— unassigned —</option>` + TEAM.map(m => `<option value="${m.id}" ${t.assignee===m.id?"selected":""}>${esc(m.name)} (${m.role})</option>`).join("");
   const pointsOpts = ["", "1", "2", "3", "5", "8"].map(p => `<option value="${p}" ${String(t.points ?? "")===p?"selected":""}>${p === "" ? "—" : p}</option>`).join("");
-  const parentOpts = `<option value="">— none (top level) —</option>` + state.tasks.filter(x => x.id !== t.id).map(x => `<option value="${x.id}" ${t.parentId===x.id?"selected":""}>${esc(x.title)}</option>`).join("");
   $("#modal").innerHTML = `
     <h3>Edit task</h3>
     <div class="field"><label>Title *</label><input id="e-title" value="${esc(t.title)}"></div>
@@ -1328,7 +1316,6 @@ function openEditTask(taskId) {
     </div>
     <div class="row" style="gap:10px">
       <div class="field" style="flex:1"><label>Sprint</label><input id="e-sprint" value="${esc(t.sprint || "")}" placeholder="e.g. Week 38"></div>
-      <div class="field" style="flex:1"><label>Parent task</label><select id="e-parent">${parentOpts}</select></div>
     </div>
     <div class="field"><label>Tags (comma-separated)</label><input id="e-tags" value="${esc((t.tags || []).join(", "))}"></div>
     <div class="modal-actions">
@@ -1352,7 +1339,6 @@ function openEditTask(taskId) {
     t.points = $("#e-points").value === "" ? null : +$("#e-points").value;
     t.estimatedHours = $("#e-hours").value ? +$("#e-hours").value : null;
     t.sprint = $("#e-sprint").value.trim() || null;
-    t.parentId = $("#e-parent").value || null;
     t.priority = $("#e-prio").value;
     t.project = $("#e-project").value.trim();
     t.due = $("#e-due").value || null;
@@ -1360,17 +1346,15 @@ function openEditTask(taskId) {
     save(); closeModal(); renderTasks(); renderBoard(); renderRoadmap(); toast("Task updated ✓");
   };
 }
-function openAddTask(preTitle, preDesc, preParent) {
-  const parent = preParent ? state.tasks.find(x => x.id === preParent) : null;
+function openAddTask(preTitle, preDesc) {
   const prioOpts = ["low","medium","high"].map(p => `<option value="${p}" ${p==="medium"?"selected":""}>${p}</option>`).join("");
   const typeOpts = Object.keys(ISSUE_TYPES).map(k => `<option value="${k}" ${k==="task"?"selected":""}>${ISSUE_TYPES[k].icon} ${ISSUE_TYPES[k].label}</option>`).join("");
   const assigneeOpts = `<option value="">— unassigned —</option>` + TEAM.map(m => `<option value="${m.id}">${esc(m.name)} (${m.role})</option>`).join("");
   const pointsOpts = ["", "1", "2", "3", "5", "8"].map(p => `<option value="${p}">${p === "" ? "—" : p}</option>`).join("");
-  const parentOpts = `<option value="">— none (top level) —</option>` + state.tasks.map(x => `<option value="${x.id}" ${preParent===x.id?"selected":""}>${esc(x.title)}</option>`).join("");
   $("#modal").innerHTML = `
-    <h3>${parent ? "New subtask" : "New task"}</h3>
-    <div class="notice" style="margin-bottom:12px">${parent ? `Will be added under: <b>${esc(parent.title)}</b>` : "Adds instantly — you control it. opencode reviews at day end."}</div>
-    <div class="field"><label>Title *</label><input id="a-title" value="${esc(preTitle || "")}" placeholder="${parent ? "Subtask title" : "Task title"}"></div>
+    <h3>New task</h3>
+    <div class="notice" style="margin-bottom:12px">Adds instantly — you control it. opencode reviews at day end.</div>
+    <div class="field"><label>Title *</label><input id="a-title" value="${esc(preTitle || "")}" placeholder="Task title"></div>
     <div class="field"><label>Description</label><textarea id="a-desc" placeholder="What needs to be done?">${esc(preDesc || "")}</textarea></div>
     <div class="row" style="gap:10px">
       <div class="field" style="flex:1"><label>Type</label><select id="a-type">${typeOpts}</select></div>
@@ -1388,19 +1372,19 @@ function openAddTask(preTitle, preDesc, preParent) {
       <div class="field" style="flex:1"><label>Project</label><input id="a-project" placeholder="e.g. Strategic Planning"></div>
       <div class="field" style="flex:1"><label>Sprint</label><input id="a-sprint" placeholder="e.g. Week 38"></div>
     </div>
-    <div class="row" style="gap:10px">
-      <div class="field" style="flex:1"><label>Parent task</label><select id="a-parent">${parentOpts}</select></div>
-    </div>
+    <div class="field"><label>Steps (one per line) — optional</label><textarea id="a-steps" placeholder="Draft outline&#10;Review with manager&#10;Finalize"></textarea></div>
     <div class="field"><label>Tags (comma-separated)</label><input id="a-tags" placeholder="strategy, reporting"></div>
     <div class="modal-actions">
       <button class="btn ghost" id="a-cancel">Cancel</button>
-      <button class="btn" id="a-save">${parent ? "Add subtask" : "Add task"}</button>
+      <button class="btn" id="a-save">Add task</button>
     </div>`;
   openModal();
   $("#a-cancel").onclick = closeModal;
   $("#a-save").onclick = () => {
     const title = $("#a-title").value.trim();
     if (!title) { toast("Title is required"); return; }
+    const steps = $("#a-steps").value.split("\n").map(s => s.trim()).filter(Boolean)
+      .map(text => ({ id: uid(), text, done: false }));
     const t = {
       id: uid(), title,
       desc: $("#a-desc").value.trim(),
@@ -1410,17 +1394,17 @@ function openAddTask(preTitle, preDesc, preParent) {
       points: $("#a-points").value === "" ? null : +$("#a-points").value,
       estimatedHours: $("#a-hours").value ? +$("#a-hours").value : null,
       sprint: $("#a-sprint").value.trim() || null,
-      parentId: $("#a-parent").value || null,
       priority: $("#a-prio").value,
       due: $("#a-due").value || null,
       project: $("#a-project").value.trim(),
       tags: $("#a-tags").value.split(",").map(s => s.trim()).filter(Boolean),
+      steps,
       createdAt: new Date().toISOString(),
       updates: []
     };
     state.tasks.push(t);
-    addUpdate(t.id, parent ? ("Created as subtask of " + (parent.title || "")) : "Created");
-    save(); closeModal(); renderTasks(); renderBoard(); renderRoadmap(); toast(parent ? "Subtask added ✓" : "Task added ✓");
+    addUpdate(t.id, "Created");
+    save(); closeModal(); renderTasks(); renderBoard(); renderRoadmap(); toast("Task added ✓");
   };
 }
 
@@ -1463,43 +1447,82 @@ function renderMePicker() {
   sel.onchange = () => { state.me = sel.value || null; save(); renderAll(); };
 }
 
-/* ---------- Hierarchy ---------- */
-function childrenOf(id) { return state.tasks.filter(t => t.parentId === id); }
-function parentOf(t) { return t.parentId ? state.tasks.find(x => x.id === t.parentId) : null; }
-function subtaskProgress(id) {
-  const kids = childrenOf(id);
-  if (!kids.length) return null;
-  const done = kids.filter(k => k.status === "done").length;
-  return { done, total: kids.length, pct: Math.round(done / kids.length * 100) };
+/* ---------- Steps (checklist) ---------- */
+function stepsOf(t) { return t.steps || []; }
+function stepProgress(t) {
+  const s = stepsOf(t);
+  if (!s.length) return null;
+  const done = s.filter(x => x.done).length;
+  return { done, total: s.length, pct: Math.round(done / s.length * 100) };
 }
 function progressBar(p) {
-  return `<div class="sub-progress" title="${p.done}/${p.total} subtasks done">
+  return `<div class="sub-progress" title="${p.done}/${p.total} steps done">
     <div class="sp-track"><span class="sp-fill" style="width:${p.pct}%"></span></div>
-    <span class="sp-label">${p.done}/${p.total} · ${p.pct}%</span>
+    <span class="sp-label">${p.done}/${p.total} steps · ${p.pct}%</span>
   </div>`;
+}
+function stepsBlock(t) {
+  const steps = stepsOf(t);
+  if (!steps.length) return "";
+  const items = steps.map(s => `
+    <label class="step ${s.done ? "done" : ""}">
+      <input type="checkbox" ${s.done ? "checked" : ""} ${READ_ONLY ? "disabled" : ""} data-step="${esc(t.id)}" data-step-id="${esc(s.id)}">
+      <span>${esc(s.text)}</span>
+    </label>`).join("");
+  return `<div class="steps-block">${items}</div>`;
+}
+function toggleStep(taskId, stepId) {
+  const t = state.tasks.find(x => x.id === taskId);
+  const s = t && (t.steps || []).find(x => x.id === stepId);
+  if (!s) return;
+  s.done = !s.done;
+  save(); renderTasks(); renderBoard(); renderRoadmap();
+}
+function removeStep(taskId, stepId) {
+  const t = state.tasks.find(x => x.id === taskId);
+  if (!t) return;
+  t.steps = (t.steps || []).filter(x => x.id !== stepId);
+  save(); renderTasks(); renderBoard(); renderRoadmap();
+}
+function openAddStep(taskId) {
+  const t = state.tasks.find(x => x.id === taskId);
+  if (!t) return;
+  $("#modal").innerHTML = `
+    <h3>Steps — ${esc(t.title)}</h3>
+    <div class="notice" style="margin-bottom:12px">Break the work into steps, one per line. Check them off as you finish.</div>
+    <div class="field"><label>Steps</label><textarea id="s-text" placeholder="Draft outline&#10;Review with manager&#10;Finalize">${esc(stepsOf(t).map(s => s.text).join("\n"))}</textarea></div>
+    <div class="modal-actions">
+      <button class="btn ghost" id="s-cancel">Cancel</button>
+      <button class="btn" id="s-save">Save steps</button>
+    </div>`;
+  openModal();
+  $("#s-cancel").onclick = closeModal;
+  $("#s-save").onclick = () => {
+    const lines = $("#s-text").value.split("\n").map(s => s.trim()).filter(Boolean);
+    const prevDone = {};
+    stepsOf(t).forEach(s => { prevDone[s.text] = s.done; });
+    t.steps = lines.map(text => ({ id: uid(), text, done: !!prevDone[text] }));
+    save(); closeModal(); renderTasks(); renderBoard(); renderRoadmap();
+    toast(t.steps.length ? t.steps.length + " step(s) saved ✓" : "Steps cleared");
+  };
 }
 function isSystemUpdateText(t) {
   const s = (t || "").trim();
-  return /^Created$/.test(s) || /^Marked done$/.test(s) || /^Re-opened/.test(s) || /^Status\s/.test(s) || /^Created as subtask/.test(s);
+  return /^Created$/.test(s) || /^Marked done$/.test(s) || /^Re-opened/.test(s) || /^Status\s/.test(s);
 }
-function migrateUpdatesToSubtasks() {
-  if (READ_ONLY || state.migratedUpdatesToSubtasks) return;
-  let added = 0;
-  for (const t of state.tasks) {
-    const ups = (t.updates || []).filter(u => u.text && !isSystemUpdateText(u.text));
-    for (const u of ups) {
-      state.tasks.push({
-        id: uid(), title: u.text.trim(), desc: "",
-        status: t.status === "done" ? "done" : "open", source: "manual",
-        type: "task", assignee: null, points: null, estimatedHours: null,
-        sprint: null, parentId: t.id, priority: "medium", due: null,
-        project: t.project, tags: [], createdAt: u.at || new Date().toISOString(), updates: []
-      });
-      added++;
-    }
+function migrateLegacySubtasks() {
+  if (READ_ONLY || state.migratedLegacySubtasks) return;
+  let moved = 0;
+  for (const t of state.tasks.slice()) {
+    if (!t.parentId) continue;
+    const parent = state.tasks.find(x => x.id === t.parentId);
+    if (!parent) continue;
+    parent.steps = (parent.steps || []).concat([{ id: uid(), text: t.title.trim(), done: t.status === "done" }]);
+    state.tasks = state.tasks.filter(x => x.id !== t.id);
+    moved++;
   }
-  state.migratedUpdatesToSubtasks = true;
-  if (added) { save(); toast("Converted " + added + " past updates into subtasks ✓"); }
+  state.migratedLegacySubtasks = true;
+  if (moved) { save(); toast("Moved " + moved + " old subtask(s) into step lists ✓"); }
 }
 
 /* ---------- Board (Kanban) ---------- */
@@ -1512,14 +1535,14 @@ function sprintsOf() {
 function boardCard(t) {
   const typeInfo = ISSUE_TYPES[t.type] || ISSUE_TYPES.task;
   const assignee = TEAM_BY_ID[t.assignee];
-  const kids = childrenOf(t.id).length;
-  const prog = subtaskProgress(t.id);
+  const stepCount = stepsOf(t).length;
+  const prog = stepProgress(t);
   const meta = [
     assignee ? `👤 ${esc(assignee.name)}` : "",
     t.points != null ? `⚡${t.points}` : "",
     t.project ? esc(t.project) : "",
     t.due ? `⏳${esc(t.due)}` : "",
-    kids ? `⊞${kids}` : "",
+    stepCount ? `✓${stepCount}` : "",
     (t.comments || []).length ? `💬${t.comments.length}` : ""
   ].filter(Boolean).join(" · ");
   return `<div class="board-card" draggable="true" data-id="${esc(t.id)}">
@@ -1581,7 +1604,7 @@ function renderRoadmap() {
 }
 function roadmapMeta(t) {
   const assignee = TEAM_BY_ID[t.assignee];
-  const prog = subtaskProgress(t.id);
+  const prog = stepProgress(t);
   const bits = [
     assignee ? `👤 ${esc(assignee.name)}` : "",
     t.points != null ? `⚡${t.points} pts` : "",
@@ -2753,7 +2776,7 @@ window.createNote = createNote;
 async function bootstrap() {
   applyTheme();
   applyReadOnly();
-  migrateUpdatesToSubtasks();
+  migrateLegacySubtasks();
   if (TOKEN_AUTH && !state.me) state.me = "abir";
   renderAll();
   if (API_ENABLED) {
