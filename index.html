@@ -472,6 +472,26 @@
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
   }
+
+  /* --- Login / auth --- */
+  .login-screen {
+    position: fixed; inset: 0; z-index: 400; display: none;
+    align-items: center; justify-content: center;
+    background: rgba(8,12,10,.72); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  }
+  .login-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+    padding: 34px 32px; width: 360px; max-width: calc(100vw - 32px);
+    box-shadow: 0 24px 70px rgba(0,0,0,.45);
+  }
+  .login-logo {
+    width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center;
+    background: var(--accent); color: var(--on-accent); font-family: var(--font-display);
+    font-weight: 800; font-size: 24px; margin-bottom: 16px;
+  }
+  .login-card h2 { font-family: var(--font-display); font-size: 21px; letter-spacing: -.3px; margin: 0 0 4px; }
+  .login-sub { color: var(--muted); font-size: 13px; margin: 0 0 22px; }
+  .login-error { background: rgba(248,113,113,.12); border: 1px solid rgba(248,113,113,.3); color: var(--red); font-size: 12.5px; padding: 9px 11px; border-radius: 9px; margin-bottom: 14px; }
 </style>
 </head>
 <body>
@@ -509,6 +529,8 @@
           <span class="small muted">👤</span>
           <select id="meSelect" title="Who are you viewing as?"></select>
         </div>
+        <button class="bell" id="changePwBtn" title="Change password" style="display:none">🔑</button>
+        <button class="bell" id="logoutBtn" title="Sign out" style="display:none">🚪</button>
         <button class="bell" id="themeBtn" title="Toggle theme">🌙</button>
         <button class="btn small" id="saveGithubBtn" title="Publish current workspace to GitHub Pages">💾 Save to GitHub</button>
         <div class="menu-wrap">
@@ -519,6 +541,25 @@
       <div class="sync-status" id="syncStatus"><span class="pill"></span><span id="syncText">local</span></div>
     </div>
   </header>
+
+  <!-- ================= LOGIN ================= -->
+  <div class="login-screen" id="loginScreen">
+    <div class="login-card">
+      <div class="login-logo">A</div>
+      <h2>Sign in</h2>
+      <p class="login-sub">Abir's Productivity App — team workspace</p>
+      <div id="loginError" class="login-error" style="display:none"></div>
+      <div class="field">
+        <label>Email</label>
+        <input id="loginEmail" type="email" autocomplete="username" placeholder="you@akijresource.com">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input id="loginPw" type="password" autocomplete="current-password" placeholder="••••••••">
+      </div>
+      <button class="btn" id="loginBtn" style="width:100%; justify-content:center">Sign in</button>
+    </div>
+  </div>
 
   <!-- ================= DASHBOARD ================= -->
   <section class="view active" id="view-dashboard">
@@ -727,15 +768,15 @@ const READ_ONLY = window.__READ_ONLY__ === true;
    the source of truth and localStorage becomes an offline cache. Leave empty
    ("") to run in the original single-user local mode. */
 const API_BASE = window.__API_BASE__ || "https://spa-team-api.abirul-islam.workers.dev";
-const API_TOKEN = window.__API_TOKEN__ || "EzeVsA-JqZRkqG2J9Qh4cuZ6LiAndMno";
 const API_ENABLED = API_BASE !== "" && !READ_ONLY;
-const TOKEN_AUTH = API_ENABLED && API_TOKEN !== "";
+const AUTH_KEY = "abirProd.auth";
 let apiVersion = null;   // optimistic-lock version of the last server state we saw
 let lockedMe = null;     // authenticated user (team mode) — locks the identity picker
+let sessionToken = null; // signed session token from /api/login
 
 function apiHeaders() {
   const h = { "Content-Type": "application/json" };
-  if (API_TOKEN) { h["X-Team-Token"] = API_TOKEN; if (state.me) h["X-Team-User"] = state.me; }
+  if (sessionToken) h["Authorization"] = "Bearer " + sessionToken;
   return h;
 }
 
@@ -1498,16 +1539,87 @@ function renderMePicker() {
   }
   sel.disabled = false;
   sel.removeAttribute("title");
-  let opts;
-  if (TOKEN_AUTH) {
-    opts = TEAM.map(m => `<option value="${m.id}" ${state.me === m.id ? "selected" : ""}>${esc(m.name)} (${m.role})</option>`).join("");
-  } else {
-    opts = [`<option value="">👥 Everyone (Manager view)</option>`]
-      .concat(TEAM.map(m => `<option value="${m.id}" ${state.me === m.id ? "selected" : ""}>${esc(m.name)} (${m.role})</option>`))
-      .join("");
-  }
+  const opts = [`<option value="">👥 Everyone (Manager view)</option>`]
+    .concat(TEAM.map(m => `<option value="${m.id}" ${state.me === m.id ? "selected" : ""}>${esc(m.name)} (${m.role})</option>`))
+    .join("");
   sel.innerHTML = opts;
   sel.onchange = () => { state.me = sel.value || null; save(); renderAll(); };
+}
+
+/* ---------- Auth (email + password) ---------- */
+function showLogin(message) {
+  const screen = $("#loginScreen");
+  if (!screen) return;
+  screen.style.display = "flex";
+  const err = $("#loginError");
+  err.style.display = "none";
+  err.textContent = "";
+  if (message) { err.textContent = message; err.style.display = "block"; }
+  $("#loginPw").value = "";
+  setTimeout(() => $("#loginEmail").focus(), 50);
+}
+function hideLogin() {
+  const screen = $("#loginScreen");
+  if (screen) screen.style.display = "none";
+}
+async function doLogin() {
+  const email = $("#loginEmail").value.trim().toLowerCase();
+  const pw = $("#loginPw").value;
+  if (!email || !pw) { showLogin("Enter your email and password."); return; }
+  const btn = $("#loginBtn");
+  btn.disabled = true; btn.textContent = "Signing in…";
+  try {
+    const r = await fetch(API_BASE + "/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password: pw })
+    });
+    const j = await r.json();
+    if (!r.ok || !j.token) { showLogin(j.error || "Sign in failed."); return; }
+    sessionToken = j.token;
+    localStorage.setItem(AUTH_KEY, sessionToken);
+    lockedMe = j.user;
+    state.me = j.user.id;
+    hideLogin();
+    renderAuth();
+    renderAll();
+    await pullFromServer();
+    toast("Welcome, " + j.user.name + " ✓");
+  } catch (e) {
+    showLogin("Couldn't reach the server. Check your connection.");
+  } finally {
+    btn.disabled = false; btn.textContent = "Sign in";
+  }
+}
+function logout() {
+  sessionToken = null;
+  lockedMe = null;
+  state.me = null;
+  localStorage.removeItem(AUTH_KEY);
+  renderAuth();
+  showLogin();
+  setSync("local");
+  renderAll();
+}
+function renderAuth() {
+  const authed = !!sessionToken && !!lockedMe;
+  const lo = $("#logoutBtn"); if (lo) lo.style.display = authed ? "" : "none";
+  const cp = $("#changePwBtn"); if (cp) cp.style.display = authed ? "" : "none";
+}
+function changePassword() {
+  const cur = prompt("Current password:");
+  if (cur === null) return;
+  const next = prompt("New password (min 8 characters):");
+  if (next === null) return;
+  if (next.length < 8) { toast("New password must be at least 8 characters"); return; }
+  fetch(API_BASE + "/api/password", {
+    method: "POST",
+    headers: apiHeaders(),
+    body: JSON.stringify({ currentPassword: cur, newPassword: next })
+  })
+    .then(r => r.json())
+    .then(j => { if (j.ok) toast("Password updated ✓"); else toast("Couldn't change password: " + (j.error || "unknown")); })
+    .catch(() => toast("Couldn't change password — offline"));
 }
 
 /* ---------- Steps (checklist) ---------- */
@@ -2268,7 +2380,7 @@ async function pullFromServer() {
   if (!API_ENABLED) return;
   try {
     const r = await fetch(API_BASE + "/api/state", { headers: apiHeaders(), credentials: "include", cache: "no-store" });
-    if (r.status === 401 || r.status === 403) { setSync("local"); toast("Access denied — check your team identity"); return; }
+    if (r.status === 401 || r.status === 403) { logout(); return; }
     if (!r.ok) return;
     const j = await r.json();
     if (j.state && Array.isArray(j.state.tasks)) {
@@ -2276,7 +2388,7 @@ async function pullFromServer() {
       if (serverEmpty && state.tasks.length) { apiVersion = j.version || 0; await pushToServer(false); return; }
       state = normalize(j.state);
       apiVersion = j.version;
-      if (j.user && j.user.id) { state.me = j.user.id; if (!TOKEN_AUTH) lockedMe = j.user; }
+      if (j.user && j.user.id) { state.me = j.user.id; lockedMe = j.user; }
       localStorage.setItem(LS_KEY, JSON.stringify(state));
       renderAll();
       setSync("team");
@@ -2292,12 +2404,12 @@ async function pushToServer(silent) {
       credentials: "include",
       body: JSON.stringify({ state: stripMe(), version: apiVersion })
     });
-    if (resp.status === 401 || resp.status === 403) { setSync("local"); return; }
+    if (resp.status === 401 || resp.status === 403) { logout(); return; }
     const j = await resp.json();
     if (resp.status === 409 && j.state) {
       mergeRemote(j.state);
       apiVersion = j.version;
-      if (j.user && j.user.id) { state.me = j.user.id; if (!TOKEN_AUTH) lockedMe = j.user; }
+      if (j.user && j.user.id) { state.me = j.user.id; lockedMe = j.user; }
       localStorage.setItem(LS_KEY, JSON.stringify(state));
       renderAll();
       await pushToServer(true); // retry once with the merged state
@@ -2840,18 +2952,31 @@ async function bootstrap() {
   applyTheme();
   applyReadOnly();
   migrateLegacySubtasks();
-  if (TOKEN_AUTH && !state.me) state.me = "abir";
+  sessionToken = localStorage.getItem(AUTH_KEY) || null;
   renderAll();
+  renderAuth();
   if (API_ENABLED) {
     const btn = $("#saveGithubBtn");
     if (btn) btn.textContent = "💾 Save";
-    await pullFromServer();
+    if (sessionToken) {
+      await pullFromServer();
+    } else {
+      showLogin();
+      setSync("local");
+    }
   } else {
     restoreFromServerIfEmpty().then(syncFromOpencode);
     checkServer();
   }
 }
 bootstrap();
+
+/* auth UI wiring */
+$("#loginBtn").addEventListener("click", doLogin);
+$("#loginPw").addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
+$("#loginEmail").addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
+$("#logoutBtn").addEventListener("click", logout);
+$("#changePwBtn").addEventListener("click", changePassword);
 
 /* Installable app (PWA) — register service worker when served over http(s) */
 if ("serviceWorker" in navigator && location.protocol !== "file:") {
