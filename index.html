@@ -177,8 +177,14 @@
   .chart-card h3 .tag { font-size: 10.5px; color: var(--muted); font-weight: 600; }
   canvas { width: 100%; height: auto; display: block; }
 
-  .two-col { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; }
-  @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+.two-col { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; }
+@media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+.dash-sep { margin: 6px 0 18px; border-top: 1px solid var(--border); padding-top: 18px; }
+.dash-sep h3 { font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--muted); letter-spacing: -.2px; }
+.overdue-list { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+.overdue-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 10px; background: var(--bg2); border: 1px solid var(--border2); border-radius: 8px; }
+.overdue-item .od-title { font-size: 13px; font-weight: 600; color: var(--text); }
+.overdue-item .od-meta { font-size: 11.5px; color: var(--muted); white-space: nowrap; }
 
   /* Tables */
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -518,11 +524,16 @@
   <section class="view active" id="view-dashboard">
     <div class="page-title">
       <div>
-        <h2>Work Analytics</h2>
-        <p>Your opencode activity since the very beginning.</p>
+        <h2>Dashboard</h2>
+        <p>Live task overview + opencode activity.</p>
       </div>
-      <button class="btn ghost" id="refreshBtn">↻ Refresh from opencode</button>
+      <button class="btn ghost" id="refreshBtn">↻ Refresh</button>
     </div>
+    <div class="kpis" id="taskKpis"></div>
+    <div class="charts" id="taskCharts"></div>
+    <div class="card chart-card" id="taskOverdue" style="margin-bottom:16px"></div>
+
+    <div class="dash-sep"><h3>opencode activity</h3></div>
     <div class="kpis" id="kpis"></div>
     <div class="alerts" id="alerts"></div>
     <div class="seg" id="dashFocus" style="margin-bottom:16px"></div>
@@ -891,12 +902,64 @@ function showView(name) {
   if (name === "focus") renderFocus();
   if (name === "board") renderBoard();
   if (name === "roadmap") renderRoadmap();
+  if (name === "dashboard") renderDashboard();
 }
 
 /* ============================================================
    DASHBOARD
 ============================================================ */
 function renderDashboard() {
+  renderTaskDashboard();
+  renderAnalyticsDashboard();
+}
+function renderTaskDashboard() {
+  const tasks = state.tasks;
+  const st = { open: 0, progress: 0, review: 0, done: 0 };
+  tasks.forEach(t => { if (st[t.status] != null) st[t.status]++; });
+  const total = tasks.length;
+  const completion = total ? Math.round(st.done / total * 100) : 0;
+  const today = todayStr();
+  const overdue = tasks.filter(t => t.status !== "done" && t.due && t.due < today);
+  const totalSteps = tasks.reduce((n, t) => n + stepsOf(t).length, 0);
+  const doneSteps = tasks.reduce((n, t) => n + stepsOf(t).filter(s => s.done).length, 0);
+
+  const kpis = [
+    { label: "Total tasks", value: total, sub: "all statuses" },
+    { label: "Done", value: st.done, sub: "completed" },
+    { label: "In progress", value: st.progress, sub: "started" },
+    { label: "Open", value: st.open, sub: "not started" },
+    { label: "In review", value: st.review, sub: "pending sign-off" },
+    { label: "Overdue", value: overdue.length, sub: overdue.length ? "needs attention" : "on track" },
+    { label: "Completion", value: completion + "%", sub: st.done + "/" + total + " tasks", accent: true },
+    { label: "Steps", value: doneSteps + "/" + totalSteps, sub: "done / total" }
+  ];
+  $("#taskKpis").innerHTML = kpis.map(k =>
+    `<div class="kpi ${k.accent ? "accent" : ""}"><div class="k-label">${k.label}</div><div class="k-value">${k.value}</div><div class="k-sub">${k.sub}</div></div>`
+  ).join("");
+
+  const byProject = {};
+  tasks.forEach(t => { const p = t.project || "No project"; byProject[p] = (byProject[p] || 0) + 1; });
+  const byAssignee = {};
+  tasks.forEach(t => { const a = t.assignee ? (TEAM_BY_ID[t.assignee] ? TEAM_BY_ID[t.assignee].name : t.assignee) : "Unassigned"; byAssignee[a] = (byAssignee[a] || 0) + 1; });
+  const byPriority = { high: 0, medium: 0, low: 0 };
+  tasks.forEach(t => { if (byPriority[t.priority] != null) byPriority[t.priority]++; });
+
+  $("#taskCharts").innerHTML = `
+    <div class="card chart-card"><h3>Tasks by status</h3><canvas id="tc-status" height="180"></canvas></div>
+    <div class="card chart-card"><h3>Tasks by project</h3><canvas id="tc-project" height="180"></canvas></div>
+    <div class="card chart-card"><h3>Tasks by assignee</h3><canvas id="tc-assignee" height="180"></canvas></div>
+    <div class="card chart-card"><h3>Tasks by priority</h3><canvas id="tc-priority" height="180"></canvas></div>
+  `;
+  drawBars($("#tc-status"), [st.open, st.progress, st.review, st.done], ["Open", "Progress", "Review", "Done"], "#2fbf8f");
+  drawHBar($("#tc-project"), Object.entries(byProject).sort((a, b) => b[1] - a[1]).map(([k, v]) => ({ label: k, value: v })), ["#2fbf8f", "#35b8a6", "#e0b45a", "#34d399", "#fbbf24", "#8ba09a", "#4fd3c1", "#f87171"]);
+  drawHBar($("#tc-assignee"), Object.entries(byAssignee).sort((a, b) => b[1] - a[1]).map(([k, v]) => ({ label: k, value: v })), ["#2fbf8f", "#35b8a6", "#e0b45a", "#8ba09a", "#34d399", "#fbbf24", "#f87171", "#4fd3c1"]);
+  drawBars($("#tc-priority"), [byPriority.high, byPriority.medium, byPriority.low], ["High", "Medium", "Low"], "#e0b45a");
+
+  $("#taskOverdue").innerHTML = overdue.length
+    ? `<h3>Overdue tasks <span class="tag">${overdue.length}</span></h3><div class="overdue-list">${overdue.map(t => `<div class="overdue-item"><span class="od-title">${esc(t.title)}</span><span class="od-meta">${esc(t.due)} · ${STATUS[t.status] || t.status}${t.assignee && TEAM_BY_ID[t.assignee] ? " · " + esc(TEAM_BY_ID[t.assignee].name) : ""}</span></div>`).join("")}</div>`
+    : `<h3>Overdue tasks <span class="tag">0</span></h3><div class="empty small">Nothing overdue.</div>`;
+}
+function renderAnalyticsDashboard() {
   const a = state.analytics;
   if (!a || !a.totals) { $("#kpis").innerHTML = '<div class="empty"><div class="big">📊</div>No analytics yet.<br>Run "Refresh from opencode" or import opencode.json.</div>'; $("#charts").innerHTML = ""; $("#recentSessions").innerHTML = ""; return; }
   const t = a.totals;
