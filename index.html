@@ -2389,6 +2389,7 @@ async function pullFromServer() {
       state = normalize(j.state);
       apiVersion = j.version;
       if (j.user && j.user.id) { state.me = j.user.id; lockedMe = j.user; }
+      renderAuth();
       localStorage.setItem(LS_KEY, JSON.stringify(state));
       renderAll();
       setSync("team");
