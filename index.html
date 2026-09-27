@@ -492,6 +492,36 @@
   .login-card h2 { font-family: var(--font-display); font-size: 21px; letter-spacing: -.3px; margin: 0 0 4px; }
   .login-sub { color: var(--muted); font-size: 13px; margin: 0 0 22px; }
   .login-error { background: rgba(248,113,113,.12); border: 1px solid rgba(248,113,113,.3); color: var(--red); font-size: 12.5px; padding: 9px 11px; border-radius: 9px; margin-bottom: 14px; }
+
+  /* --- Monthly KPI tracker --- */
+  #view-kpi select { background: var(--bg2); border: 1px solid var(--border2); color: var(--text); border-radius: 9px; padding: 8px 10px; font-size: 13px; font-family: inherit; }
+  .kpi-head, .kpi-row {
+    display: grid; grid-template-columns: 2.2fr .7fr .7fr .8fr .7fr 1fr 1.6fr; gap: 10px; align-items: center;
+  }
+  .kpi-head { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); font-weight: 700; padding: 10px 14px; border: 1px solid var(--border); border-radius: 12px 12px 0 0; background: var(--bg2); }
+  .kpi-row { border: 1px solid var(--border); border-top: none; padding: 14px; background: var(--card); }
+  .kpi-row:last-of-type { border-radius: 0 0 12px 12px; }
+  .kpi-cell label { display: block; font-size: 10.5px; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); font-weight: 700; margin-bottom: 5px; }
+  .kpi-charter { font-size: 11px; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: .3px; }
+  .kpi-title { font-weight: 650; font-size: 14px; margin: 3px 0; }
+  .kpi-def { font-size: 12px; color: var(--muted); line-height: 1.4; }
+  .kpi-big { font-size: 20px; font-weight: 750; font-family: var(--font-display); }
+  .kpi-tgt { width: 100%; background: var(--bg2); border: 1px solid var(--border2); color: var(--text); border-radius: 9px; padding: 8px 10px; font-size: 16px; font-weight: 700; }
+  .kpi-evd { font-size: 12px; line-height: 1.5; }
+  .kpi-evd-title { font-weight: 650; display: block; }
+  .kpi-evd-links { color: var(--muted); }
+  .kpi-evd-links a { color: var(--accent); text-decoration: none; }
+  .kpi-evd-links a:hover { text-decoration: underline; }
+  .kpi-total { display: grid; grid-template-columns: 1fr auto auto; gap: 14px; align-items: center; margin-top: 12px; padding: 12px 16px; background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; font-size: 13px; }
+  .kpi-total b { font-size: 22px; font-family: var(--font-display); color: var(--accent); }
+  .kpi-month { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 14px; overflow: hidden; }
+  .kpi-month-head { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--bg2); border-bottom: 1px solid var(--border); }
+  .kpi-task { display: flex; align-items: center; gap: 10px; padding: 9px 14px; border-bottom: 1px solid var(--border2); font-size: 13px; }
+  .kpi-task:last-child { border-bottom: none; }
+  .kpi-task.is-done .kpi-task-title { color: var(--muted); text-decoration: line-through; }
+  .kpi-task-title { flex: 1; }
+  .kpi-task-proj { width: 150px; flex-shrink: 0; }
+  .kpi-task-sel { width: 220px; flex-shrink: 0; background: var(--bg2); border: 1px solid var(--border2); color: var(--text); border-radius: 8px; padding: 5px 7px; font-size: 12px; }
 </style>
 </head>
 <body>
@@ -514,6 +544,7 @@
         <button data-view="focus"><span class="dot">🎯</span> Focus &amp; Plan</button>
         <button data-view="links"><span class="dot">🔗</span> Links</button>
         <button data-view="notes"><span class="dot">📝</span> Notes</button>
+        <button data-view="kpi"><span class="dot">📈</span> KPI</button>
       </nav>
       <div class="hdr-controls">
         <div class="search-wrap">
@@ -709,6 +740,23 @@
     </div>
   </section>
 
+  <!-- ================= KPI ================= -->
+  <section class="view" id="view-kpi">
+    <div class="page-title">
+      <div>
+        <h2>Monthly KPI Tracker</h2>
+        <p>Automated from your tasks: supervisor sets Target (N), Actual (O) is auto-counted, evidence (Z) is auto-collected.</p>
+      </div>
+      <div class="row">
+        <select id="kpiMonth" title="Select month"></select>
+        <button class="btn ghost" id="kpiCopy">📋 Copy for Sheets</button>
+      </div>
+    </div>
+    <div id="kpiTable"></div>
+    <div class="dash-sep"><h3>Month-wise tasks</h3></div>
+    <div id="kpiMonths"></div>
+  </section>
+
   <!-- ================= LINKS ================= -->
   <section class="view" id="view-links">
     <div class="page-title">
@@ -845,6 +893,7 @@ function defaults() {
     habits: [],
     meetings: [],
     settings: { focusWork: 25, focusBreak: 5, notifyBrowser: true, backupAuto: true, autoPushGithub: true, theme: "dark" },
+    kpi: { targets: {} },
     opencodeReview: null,
     seedIds: { tasks: SEED_TASKS.map(t => t.id), notes: SEED_NOTES.map(n => n.id), worklog: SEED_WORKLOG.map(w => w.id) }
   };
@@ -861,6 +910,8 @@ function normalize(s) {
   s.settings = Object.assign({}, d.settings, s.settings);
   if (!s.seedIds) s.seedIds = {};
   if (!s.opencodeReview) s.opencodeReview = null;
+  if (!s.kpi || typeof s.kpi !== "object") s.kpi = { targets: {} };
+  if (!s.kpi.targets || typeof s.kpi.targets !== "object") s.kpi.targets = {};
   (s.tasks || []).forEach(t => {
     if (!Array.isArray(t.updates)) t.updates = [];
     if (!Array.isArray(t.sources)) t.sources = [];
@@ -944,6 +995,7 @@ function showView(name) {
   if (name === "board") renderBoard();
   if (name === "roadmap") renderRoadmap();
   if (name === "dashboard") renderDashboard();
+  if (name === "kpi") renderKpi();
 }
 
 /* ============================================================
@@ -2449,6 +2501,167 @@ function renderAll() {
   renderDashMits();
   renderFocus();
   renderMePicker();
+  renderKpi();
+}
+
+/* ============================================================
+   MONTHLY KPI TRACKER
+============================================================ */
+const KPI_DEFS = [
+  { id: "kpi1", charter: "Forecast & Control", perspective: "Internal Process",
+    name: "Recurring Process Automation Coverage",
+    def: "Proportion of recurring data collection, consolidation & calculation tasks automated.",
+    weightage: 30,
+    match: ["automation", "mcp", "sync", "agent", "tooling", "romi", "builder", "installer"] },
+  { id: "kpi2", charter: "Forecast & Control", perspective: "Learning & Growth",
+    name: "Self-Service Analytical Tool & Framework Development",
+    def: "Reusable dashboards, tools & frameworks developed, tested and adopted.",
+    weightage: 30,
+    match: ["dashboard", "app", "tracker", "tool", "framework", "productivity", "portal", "profile"] },
+  { id: "kpi3", charter: "Forecast & Control", perspective: "Customer",
+    name: "Cross-Source Reporting & Dashboard Accuracy",
+    def: "Dashboards & reports delivered on time and without material error.",
+    weightage: 40,
+    match: ["report", "analysis", "kpi", "budget", "gap", "summary", "flash", "market", "insight", "forecast", "policy", "survey", "sop", "strategy", "revenue", "income", "retail", "customer"] }
+];
+
+const curMonth = () => new Date().toISOString().slice(0, 7);
+let kpiMonth = null;
+
+function taskMonth(t) {
+  const d = t.due || t.createdAt || "";
+  return d.slice(0, 7);
+}
+function kpiOf(t) {
+  if (t.kpi && KPI_DEFS.some(k => k.id === t.kpi)) return t.kpi;
+  const hay = ((t.title || "") + " " + (t.project || "") + " " + (t.tags || []).join(" ")).toLowerCase();
+  for (const k of KPI_DEFS) if (k.match.some(w => hay.includes(w))) return k.id;
+  return null;
+}
+function monthsInTasks() {
+  const set = new Set();
+  for (const t of state.tasks) { const m = taskMonth(t); if (m) set.add(m); }
+  set.add(curMonth());
+  return Array.from(set).sort().reverse();
+}
+function monthLabel(m) {
+  const [y, mo] = m.split("-");
+  return new Date(Number(y), Number(mo) - 1, 1).toLocaleDateString(undefined, { month: "long", year: "numeric" });
+}
+function kpiTarget(month, kpiId) {
+  const t = (state.kpi && state.kpi.targets) ? state.kpi.targets[month] : null;
+  if (t && t[kpiId] != null) return t[kpiId];
+  return 3;
+}
+function kpiTasksFor(month, kpiId) {
+  return state.tasks.filter(t => taskMonth(t) === month && kpiOf(t) === kpiId);
+}
+function kpiStatus(a) {
+  if (a >= 85) return { icon: "🟢", label: "Excellent" };
+  if (a >= 75) return { icon: "🟡", label: "Acceptable" };
+  return { icon: "🔴", label: "Below" };
+}
+
+function renderKpi() {
+  if (!kpiMonth) kpiMonth = curMonth();
+  renderKpiMonthSel();
+  renderKpiTable();
+  renderKpiMonths();
+}
+function renderKpiMonthSel() {
+  const sel = $("#kpiMonth");
+  if (!sel) return;
+  sel.innerHTML = monthsInTasks().map(m => `<option value="${m}" ${m === kpiMonth ? "selected" : ""}>${monthLabel(m)}</option>`).join("");
+  sel.onchange = () => { kpiMonth = sel.value; renderKpiTable(); renderKpiMonths(); };
+}
+function renderKpiTable() {
+  const m = kpiMonth;
+  const rows = KPI_DEFS.map(k => {
+    const tasks = kpiTasksFor(m, k.id);
+    const done = tasks.filter(t => t.status === "done");
+    const target = kpiTarget(m, k.id);
+    const actual = done.length;
+    const ach = target > 0 ? actual / target * 100 : 0;
+    const score = ach / 100 * k.weightage;
+    const st = kpiStatus(ach);
+    const evidence = done.map(t => {
+      const links = (t.sources || []).filter(s => s.url).map(s => `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label || s.url)}</a>`).join(" · ");
+      return `<div class="kpi-evd"><span class="kpi-evd-title">${esc(t.title)}</span>${links ? `<span class="kpi-evd-links">${links}</span>` : ""}</div>`;
+    }).join("");
+    return `<div class="kpi-row">
+      <div class="kpi-cell kpi-name">
+        <div class="kpi-charter">${esc(k.charter)} · ${esc(k.perspective)}</div>
+        <div class="kpi-title">${esc(k.name)}</div>
+        <div class="kpi-def">${esc(k.def)} · weight ${k.weightage}%</div>
+      </div>
+      <div class="kpi-cell kpi-num"><label>Target (N)</label><input class="kpi-tgt" type="number" min="0" value="${target}" data-kpi="${k.id}" title="Set by supervisor"></div>
+      <div class="kpi-cell kpi-num"><label>Actual (O)</label><div class="kpi-big">${actual}</div></div>
+      <div class="kpi-cell kpi-num"><label>Achievement</label><div class="kpi-big">${ach.toFixed(0)}%</div></div>
+      <div class="kpi-cell kpi-num"><label>Score</label><div class="kpi-big">${score.toFixed(1)}%</div></div>
+      <div class="kpi-cell kpi-num"><label>Status</label><div class="kpi-big">${st.icon}</div><span class="muted small">${st.label}</span></div>
+      <div class="kpi-cell kpi-evd"><label>Evidence (Z) — ${done.length} task${done.length === 1 ? "" : "s"}</label>${evidence || '<span class="muted small">No done tasks this month</span>'}</div>
+    </div>`;
+  }).join("");
+  const totalScore = KPI_DEFS.reduce((sum, k) => {
+    const done = kpiTasksFor(m, k.id).filter(t => t.status === "done").length;
+    const target = kpiTarget(m, k.id);
+    return sum + (target > 0 ? done / target * 100 : 0) / 100 * k.weightage;
+  }, 0);
+  const ts = kpiStatus(totalScore);
+  $("#kpiTable").innerHTML = `<div class="kpi-head">
+    <div class="kpi-cell">KPI (${monthLabel(m)})</div><div class="kpi-cell">Target (N)</div><div class="kpi-cell">Actual (O)</div><div class="kpi-cell">Achievement</div><div class="kpi-cell">Score</div><div class="kpi-cell">Status</div><div class="kpi-cell">Evidence (Z)</div>
+  </div>${rows}<div class="kpi-total"><span>Individual Score</span><b>${totalScore.toFixed(1)}%</b><span>${ts.icon} ${ts.label}</span></div>`;
+
+  $$("#kpiTable .kpi-tgt").forEach(inp => {
+    inp.onchange = () => {
+      const kpiId = inp.dataset.kpi;
+      const v = parseInt(inp.value, 10);
+      if (isNaN(v) || v < 0) { inp.value = kpiTarget(m, kpiId); return; }
+      state.kpi.targets[m] = state.kpi.targets[m] || {};
+      state.kpi.targets[m][kpiId] = v;
+      save();
+      renderKpiTable();
+    };
+  });
+}
+function renderKpiMonths() {
+  const html = monthsInTasks().map(m => {
+    const tasks = state.tasks.filter(t => taskMonth(t) === m).slice().sort((a, b) => (a.due || "").localeCompare(b.due || ""));
+    const done = tasks.filter(t => t.status === "done").length;
+    const list = tasks.map(t => `<div class="kpi-task ${t.status === "done" ? "is-done" : ""}">
+      <span>${t.status === "done" ? "✅" : t.status === "progress" ? "🔄" : "⬜"}</span>
+      <span class="kpi-task-title">${esc(t.title)}</span>
+      <span class="kpi-task-proj muted small">${esc(t.project || "")}</span>
+      <select class="kpi-task-sel" data-id="${esc(t.id)}"><option value="">— map to KPI —</option>${KPI_DEFS.map(k => `<option value="${k.id}" ${kpiOf(t) === k.id ? "selected" : ""}>${esc(k.name.slice(0, 26))}</option>`).join("")}</select>
+    </div>`).join("");
+    return `<div class="kpi-month"><div class="kpi-month-head"><b>${monthLabel(m)}</b><span class="muted small">${tasks.length} tasks · ${done} done</span></div>${list}</div>`;
+  }).join("");
+  $("#kpiMonths").innerHTML = html;
+  $$("#kpiMonths .kpi-task-sel").forEach(sel => {
+    sel.onchange = () => {
+      const t = state.tasks.find(x => x.id === sel.dataset.id);
+      if (!t) return;
+      t.kpi = sel.value || null;
+      save();
+      renderKpiTable();
+      renderKpiMonths();
+    };
+  });
+}
+function kpiCopy() {
+  const m = kpiMonth;
+  const cols = ["KPI Name", "Target (N)", "Actual (O)", "Achievement %", "Score %", "KPI Status", "Evidence (Z)"];
+  const lines = [cols.join("\t")];
+  for (const k of KPI_DEFS) {
+    const done = kpiTasksFor(m, k.id).filter(t => t.status === "done");
+    const target = kpiTarget(m, k.id);
+    const ach = target > 0 ? done.length / target * 100 : 0;
+    const score = ach / 100 * k.weightage;
+    const st = kpiStatus(ach);
+    const evd = done.map(t => (t.sources || []).filter(s => s.url).map(s => s.url).join(" | ")).filter(Boolean).join(" ; ");
+    lines.push([k.name, target, done.length, ach.toFixed(2), score.toFixed(2), st.label, evd].join("\t"));
+  }
+  navigator.clipboard.writeText(lines.join("\n")).then(() => toast("KPI tracker copied — paste into Google Sheets")).catch(() => toast("Copy failed"));
 }
 
 /* ============================================================
@@ -2978,6 +3191,7 @@ $("#loginPw").addEventListener("keydown", e => { if (e.key === "Enter") doLogin(
 $("#loginEmail").addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
 $("#logoutBtn").addEventListener("click", logout);
 $("#changePwBtn").addEventListener("click", changePassword);
+$("#kpiCopy").addEventListener("click", kpiCopy);
 
 /* Installable app (PWA) — register service worker when served over http(s) */
 if ("serviceWorker" in navigator && location.protocol !== "file:") {
