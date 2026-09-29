@@ -522,6 +522,10 @@
   .kpi-task-title { flex: 1; }
   .kpi-task-proj { width: 150px; flex-shrink: 0; }
   .kpi-task-sel { width: 220px; flex-shrink: 0; background: var(--bg2); border: 1px solid var(--border2); color: var(--text); border-radius: 8px; padding: 5px 7px; font-size: 12px; }
+  .kpi-task-evd { flex: 1; min-width: 160px; background: var(--bg2); border: 1px solid var(--border2); color: var(--text); border-radius: 8px; padding: 5px 9px; font-size: 12px; font-family: var(--font-mono, monospace); }
+  .kpi-task-evd::placeholder { color: var(--muted); font-family: inherit; }
+  .kpi-evd-file { display: inline-block; font-family: var(--font-mono, monospace); font-size: 11.5px; color: var(--text); background: var(--bg2); border: 1px solid var(--border2); border-radius: 6px; padding: 1px 7px; margin: 2px 0; }
+  .kpi-evd-file.missing { color: var(--muted); border-style: dashed; }
 </style>
 </head>
 <body>
@@ -745,7 +749,7 @@
     <div class="page-title">
       <div>
         <h2>Monthly KPI Tracker</h2>
-        <p>Automated from your tasks: supervisor sets Target (N), Actual (O) is auto-counted, evidence (Z) is auto-collected.</p>
+        <p>Each task is one work output. Map it to a KPI folder and attach its evidence file — Actual (O) counts every work item (created · updated · planned) with evidence.</p>
       </div>
       <div class="row">
         <select id="kpiMonth" title="Select month"></select>
@@ -2510,16 +2514,19 @@ function renderAll() {
 const KPI_DEFS = [
   { id: "kpi1", charter: "Forecast & Control", perspective: "Internal Process",
     name: "Recurring Process Automation Coverage",
+    short: "Automation", folder: "Automation",
     def: "Proportion of recurring data collection, consolidation & calculation tasks automated.",
     weightage: 30,
     match: ["automation", "mcp", "sync", "agent", "tooling", "romi", "builder", "installer"] },
   { id: "kpi2", charter: "Forecast & Control", perspective: "Learning & Growth",
     name: "Self-Service Analytical Tool & Framework Development",
+    short: "Formats & Frameworks", folder: "Formats and Frameworks",
     def: "Reusable dashboards, tools & frameworks developed, tested and adopted.",
     weightage: 30,
     match: ["dashboard", "app", "tracker", "tool", "framework", "productivity", "portal", "profile"] },
   { id: "kpi3", charter: "Forecast & Control", perspective: "Customer",
     name: "Cross-Source Reporting & Dashboard Accuracy",
+    short: "Report / Dashboard / Trackers", folder: "Report, Dashboard and trakers",
     def: "Dashboards & reports delivered on time and without material error.",
     weightage: 40,
     match: ["report", "analysis", "kpi", "budget", "gap", "summary", "flash", "market", "insight", "forecast", "policy", "survey", "sop", "strategy", "revenue", "income", "retail", "customer"] }
@@ -2577,35 +2584,38 @@ function renderKpiMonthSel() {
 function renderKpiTable() {
   const m = kpiMonth;
   const rows = KPI_DEFS.map(k => {
-    const tasks = kpiTasksFor(m, k.id);
-    const done = tasks.filter(t => t.status === "done");
+    const tasks = kpiTasksFor(m, k.id).slice().sort((a, b) => (a.due || "").localeCompare(b.due || ""));
     const target = kpiTarget(m, k.id);
-    const actual = done.length;
+    const actual = tasks.length;
+    const withEvd = tasks.filter(t => t.evidence && t.evidence.trim()).length;
     const ach = target > 0 ? actual / target * 100 : 0;
     const score = ach / 100 * k.weightage;
     const st = kpiStatus(ach);
-    const evidence = done.map(t => {
+    const evidence = tasks.map(t => {
+      const ev = (t.evidence && t.evidence.trim())
+        ? `<span class="kpi-evd-file">📎 ${esc(t.evidence.trim())}</span>`
+        : `<span class="kpi-evd-file missing">⚠ no file</span>`;
       const links = (t.sources || []).filter(s => s.url).map(s => `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label || s.url)}</a>`).join(" · ");
-      return `<div class="kpi-evd"><span class="kpi-evd-title">${esc(t.title)}</span>${links ? `<span class="kpi-evd-links">${links}</span>` : ""}</div>`;
+      return `<div class="kpi-evd"><span class="kpi-evd-title">${esc(t.title)}</span>${ev}${links ? `<span class="kpi-evd-links">${links}</span>` : ""}</div>`;
     }).join("");
     return `<div class="kpi-row">
       <div class="kpi-cell kpi-name">
         <div class="kpi-charter">${esc(k.charter)} · ${esc(k.perspective)}</div>
         <div class="kpi-title">${esc(k.name)}</div>
-        <div class="kpi-def">${esc(k.def)} · weight ${k.weightage}%</div>
+        <div class="kpi-def">${esc(k.def)} · weight ${k.weightage}% · folder "${esc(k.folder)}"</div>
       </div>
       <div class="kpi-cell kpi-num"><label>Target (N)</label><input class="kpi-tgt" type="number" min="0" value="${target}" data-kpi="${k.id}" title="Set by supervisor"></div>
       <div class="kpi-cell kpi-num"><label>Actual (O)</label><div class="kpi-big">${actual}</div></div>
       <div class="kpi-cell kpi-num"><label>Achievement</label><div class="kpi-big">${ach.toFixed(0)}%</div></div>
       <div class="kpi-cell kpi-num"><label>Score</label><div class="kpi-big">${score.toFixed(1)}%</div></div>
       <div class="kpi-cell kpi-num"><label>Status</label><div class="kpi-big">${st.icon}</div><span class="muted small">${st.label}</span></div>
-      <div class="kpi-cell kpi-evd"><label>Evidence (Z) — ${done.length} task${done.length === 1 ? "" : "s"}</label>${evidence || '<span class="muted small">No done tasks this month</span>'}</div>
+      <div class="kpi-cell kpi-evd"><label>Evidence (Z) — ${actual} work${actual === 1 ? "" : "s"} · ${withEvd} file${withEvd === 1 ? "" : "s"}</label>${evidence || '<span class="muted small">No tasks this month</span>'}</div>
     </div>`;
   }).join("");
   const totalScore = KPI_DEFS.reduce((sum, k) => {
-    const done = kpiTasksFor(m, k.id).filter(t => t.status === "done").length;
+    const actual = kpiTasksFor(m, k.id).length;
     const target = kpiTarget(m, k.id);
-    return sum + (target > 0 ? done / target * 100 : 0) / 100 * k.weightage;
+    return sum + (target > 0 ? actual / target * 100 : 0) / 100 * k.weightage;
   }, 0);
   const ts = kpiStatus(totalScore);
   $("#kpiTable").innerHTML = `<div class="kpi-head">
@@ -2632,7 +2642,8 @@ function renderKpiMonths() {
       <span>${t.status === "done" ? "✅" : t.status === "progress" ? "🔄" : "⬜"}</span>
       <span class="kpi-task-title">${esc(t.title)}</span>
       <span class="kpi-task-proj muted small">${esc(t.project || "")}</span>
-      <select class="kpi-task-sel" data-id="${esc(t.id)}"><option value="">— map to KPI —</option>${KPI_DEFS.map(k => `<option value="${k.id}" ${kpiOf(t) === k.id ? "selected" : ""}>${esc(k.name.slice(0, 26))}</option>`).join("")}</select>
+      <select class="kpi-task-sel" data-id="${esc(t.id)}" title="Map to KPI folder"><option value="">— map to KPI —</option>${KPI_DEFS.map(k => `<option value="${k.id}" ${kpiOf(t) === k.id ? "selected" : ""}>${esc(k.short)}</option>`).join("")}</select>
+      <input class="kpi-task-evd" data-id="${esc(t.id)}" placeholder="evidence file (e.g. 01_Report.xlsx)" value="${esc(t.evidence || "")}" title="Evidence file name in the KPI folder">
     </div>`).join("");
     return `<div class="kpi-month"><div class="kpi-month-head"><b>${monthLabel(m)}</b><span class="muted small">${tasks.length} tasks · ${done} done</span></div>${list}</div>`;
   }).join("");
@@ -2647,19 +2658,28 @@ function renderKpiMonths() {
       renderKpiMonths();
     };
   });
+  $$("#kpiMonths .kpi-task-evd").forEach(inp => {
+    inp.onchange = () => {
+      const t = state.tasks.find(x => x.id === inp.dataset.id);
+      if (!t) return;
+      t.evidence = inp.value.trim() || null;
+      save();
+      renderKpiTable();
+    };
+  });
 }
 function kpiCopy() {
   const m = kpiMonth;
   const cols = ["KPI Name", "Target (N)", "Actual (O)", "Achievement %", "Score %", "KPI Status", "Evidence (Z)"];
   const lines = [cols.join("\t")];
   for (const k of KPI_DEFS) {
-    const done = kpiTasksFor(m, k.id).filter(t => t.status === "done");
+    const tasks = kpiTasksFor(m, k.id);
     const target = kpiTarget(m, k.id);
-    const ach = target > 0 ? done.length / target * 100 : 0;
+    const ach = target > 0 ? tasks.length / target * 100 : 0;
     const score = ach / 100 * k.weightage;
     const st = kpiStatus(ach);
-    const evd = done.map(t => (t.sources || []).filter(s => s.url).map(s => s.url).join(" | ")).filter(Boolean).join(" ; ");
-    lines.push([k.name, target, done.length, ach.toFixed(2), score.toFixed(2), st.label, evd].join("\t"));
+    const evd = tasks.map(t => t.evidence || "").filter(Boolean).join(" ; ");
+    lines.push([k.name, target, tasks.length, ach.toFixed(2), score.toFixed(2), st.label, evd].join("\t"));
   }
   navigator.clipboard.writeText(lines.join("\n")).then(() => toast("KPI tracker copied — paste into Google Sheets")).catch(() => toast("Copy failed"));
 }
