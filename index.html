@@ -526,6 +526,14 @@
   .kpi-task-evd::placeholder { color: var(--muted); font-family: inherit; }
   .kpi-evd-file { display: inline-block; font-family: var(--font-mono, monospace); font-size: 11.5px; color: var(--text); background: var(--bg2); border: 1px solid var(--border2); border-radius: 6px; padding: 1px 7px; margin: 2px 0; }
   .kpi-evd-file.missing { color: var(--muted); border-style: dashed; }
+  .kpi-cell { min-width: 0; }
+  .kpi-evd { overflow-wrap: anywhere; margin-bottom: 8px; }
+  .kpi-evd-path { display: block; white-space: pre-wrap; font-size: 11px; user-select: text; margin: 4px 0; }
+  .kpi-evd-links { display: block; }
+  .kpi-task-evidence { flex: 1; min-width: 200px; display: grid; gap: 5px; }
+  .kpi-task-evidence label { display: grid; gap: 3px; color: var(--muted); font-size: 11px; }
+  .kpi-task-evidence input { width: 100%; min-width: 0; box-sizing: border-box; }
+  @media (max-width: 900px) { .kpi-task { flex-wrap: wrap; } .kpi-task-evidence { flex-basis: 100%; } .kpi-head, .kpi-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } .kpi-name, .kpi-row > .kpi-evd { grid-column: 1 / -1; } }
 </style>
 </head>
 <body>
@@ -757,6 +765,7 @@
       </div>
     </div>
     <div id="kpiTable"></div>
+    <p class="muted small">Online evidence opens in a new tab. Local files show their full location: copy the path into File Explorer to find and upload the file. This website cannot open files on your PC. After uploading, paste the share link in “Online evidence URL” below.</p>
     <div class="dash-sep"><h3>Month-wise tasks</h3></div>
     <div id="kpiMonths"></div>
   </section>
@@ -2569,6 +2578,28 @@ function kpiStatus(a) {
   return { icon: "🔴", label: "Below" };
 }
 
+function kpiHttpUrl(value) {
+  try { const url = new URL(String(value || "").trim()); return ["http:", "https:"].includes(url.protocol) ? url.href : ""; }
+  catch (_) { return ""; }
+}
+function kpiEvidence(t) {
+  const links = [];
+  const addLink = (value, label) => {
+    const url = kpiHttpUrl(value);
+    if (url && !links.some(s => s.url === url)) links.push({ url, label: label || "Open online evidence" });
+  };
+  addLink(t.evidenceUrl, "Open online evidence");
+  addLink(t.evidence, "Open online evidence");
+  for (const s of (t.sources || [])) addLink(s.url, s.label);
+  const localSource = (t.sources || []).find(s => /^(?:[a-z]:[\\/]|\\\\|\/)/i.test(s.path || ""));
+  const path = String(t.evidencePath || (localSource && localSource.path) || (/^(?:[a-z]:[\\/]|\\\\|\/)/i.test(t.evidence || "") ? t.evidence : "")).trim();
+  return { links, path };
+}
+function kpiEvidenceText(t) {
+  const e = kpiEvidence(t);
+  return [...e.links.map(s => s.url), e.path].filter(Boolean).join(" | ") || t.evidence || "";
+}
+
 function renderKpi() {
   if (!kpiMonth) kpiMonth = curMonth();
   renderKpiMonthSel();
@@ -2587,7 +2618,7 @@ function renderKpiTable() {
     const tasks = kpiTasksFor(m, k.id).slice().sort((a, b) => (a.due || "").localeCompare(b.due || ""));
     const target = kpiTarget(m, k.id);
     const actual = tasks.length;
-    const withEvd = tasks.filter(t => t.evidence && t.evidence.trim()).length;
+    const withEvd = tasks.filter(t => { const e = kpiEvidence(t); return e.path || e.links.length || (t.evidence && t.evidence.trim()); }).length;
     const ach = target > 0 ? actual / target * 100 : 0;
     const score = ach / 100 * k.weightage;
     const st = kpiStatus(ach);
@@ -2595,8 +2626,10 @@ function renderKpiTable() {
       const ev = (t.evidence && t.evidence.trim())
         ? `<span class="kpi-evd-file">📎 ${esc(t.evidence.trim())}</span>`
         : `<span class="kpi-evd-file missing">⚠ no file</span>`;
-      const links = (t.sources || []).filter(s => s.url).map(s => `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label || s.url)}</a>`).join(" · ");
-      return `<div class="kpi-evd"><span class="kpi-evd-title">${esc(t.title)}</span>${ev}${links ? `<span class="kpi-evd-links">${links}</span>` : ""}</div>`;
+      const e = kpiEvidence(t);
+      const links = e.links.map(s => `<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.label)} ↗</a><br><span class="small">${esc(s.url)}</span>`).join("<br>");
+      const local = e.path ? `<span class="muted small">Local file location</span><code class="kpi-evd-path">${esc(e.path)}</code><button class="btn ghost small kpi-copy-path" data-id="${esc(t.id)}">Copy path</button>` : "";
+      return `<div class="kpi-evd"><span class="kpi-evd-title">${esc(t.title)}</span>${ev}${links ? `<span class="kpi-evd-links">${links}</span>` : ""}${local}${!e.path && !e.links.length ? '<span class="muted small">Location not recorded yet</span>' : ""}</div>`;
     }).join("");
     return `<div class="kpi-row">
       <div class="kpi-cell kpi-name">
@@ -2622,6 +2655,15 @@ function renderKpiTable() {
     <div class="kpi-cell">KPI (${monthLabel(m)})</div><div class="kpi-cell">Target (N)</div><div class="kpi-cell">Actual (O)</div><div class="kpi-cell">Achievement</div><div class="kpi-cell">Score</div><div class="kpi-cell">Status</div><div class="kpi-cell">Evidence (Z)</div>
   </div>${rows}<div class="kpi-total"><span>Individual Score</span><b>${totalScore.toFixed(1)}%</b><span>${ts.icon} ${ts.label}</span></div>`;
 
+  $$("#kpiTable .kpi-copy-path").forEach(btn => {
+    btn.onclick = async () => {
+      const t = state.tasks.find(x => x.id === btn.dataset.id);
+      if (!t) return;
+      try { await navigator.clipboard.writeText(kpiEvidence(t).path); toast("File location copied — paste into File Explorer"); }
+      catch (_) { toast("Copy failed — select and copy the displayed path"); }
+    };
+  });
+
   $$("#kpiTable .kpi-tgt").forEach(inp => {
     inp.onchange = () => {
       const kpiId = inp.dataset.kpi;
@@ -2643,7 +2685,11 @@ function renderKpiMonths() {
       <span class="kpi-task-title">${esc(t.title)}</span>
       <span class="kpi-task-proj muted small">${esc(t.project || "")}</span>
       <select class="kpi-task-sel" data-id="${esc(t.id)}" title="Map to KPI folder"><option value="">— map to KPI —</option>${KPI_DEFS.map(k => `<option value="${k.id}" ${kpiOf(t) === k.id ? "selected" : ""}>${esc(k.short)}</option>`).join("")}</select>
-      <input class="kpi-task-evd" data-id="${esc(t.id)}" placeholder="evidence file (e.g. 01_Report.xlsx)" value="${esc(t.evidence || "")}" title="Evidence file name in the KPI folder">
+      <div class="kpi-task-evidence">
+        <label>Evidence file name<input class="kpi-task-evd" data-id="${esc(t.id)}" data-field="evidence" placeholder="01_Report.xlsx" value="${esc(t.evidence || "")}"></label>
+        <label>Online evidence URL<input class="kpi-task-evd" type="url" data-id="${esc(t.id)}" data-field="evidenceUrl" placeholder="https://drive.google.com/… (paste after upload)" value="${esc(t.evidenceUrl || "")}"></label>
+        <label>Local file location<input class="kpi-task-evd" data-id="${esc(t.id)}" data-field="evidencePath" placeholder="Full file path on your PC" value="${esc(kpiEvidence(t).path)}"></label>
+      </div>
     </div>`).join("");
     return `<div class="kpi-month"><div class="kpi-month-head"><b>${monthLabel(m)}</b><span class="muted small">${tasks.length} tasks · ${done} done</span></div>${list}</div>`;
   }).join("");
@@ -2662,7 +2708,11 @@ function renderKpiMonths() {
     inp.onchange = () => {
       const t = state.tasks.find(x => x.id === inp.dataset.id);
       if (!t) return;
-      t.evidence = inp.value.trim() || null;
+      const field = inp.dataset.field;
+      if (!["evidence", "evidenceUrl", "evidencePath"].includes(field)) return;
+      const value = inp.value.trim();
+      if (field === "evidenceUrl" && value && !kpiHttpUrl(value)) { toast("Enter a full http:// or https:// share link"); inp.value = t.evidenceUrl || ""; return; }
+      t[field] = value || null;
       save();
       renderKpiTable();
     };
@@ -2678,7 +2728,7 @@ function kpiCopy() {
     const ach = target > 0 ? tasks.length / target * 100 : 0;
     const score = ach / 100 * k.weightage;
     const st = kpiStatus(ach);
-    const evd = tasks.map(t => t.evidence || "").filter(Boolean).join(" ; ");
+    const evd = tasks.map(t => { const value = kpiEvidenceText(t); return value ? `${t.title}: ${value}` : ""; }).filter(Boolean).join(" ; ").replace(/[\t\r\n]+/g, " ");
     lines.push([k.name, target, tasks.length, ach.toFixed(2), score.toFixed(2), st.label, evd].join("\t"));
   }
   navigator.clipboard.writeText(lines.join("\n")).then(() => toast("KPI tracker copied — paste into Google Sheets")).catch(() => toast("Copy failed"));
